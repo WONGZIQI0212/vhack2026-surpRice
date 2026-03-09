@@ -3,7 +3,34 @@ import styled from 'styled-components';
 import { T } from '../../styles/theme';
 import SceneSwitcher from '../layout/SceneSwitcher';
 import SmartSearchBar from './SmartSearchBar';
-import StatusBadge from './StatusBadge';
+import { StatusBadgeWrap, StatusDot } from './StatusBadge';
+import { STATUS_CONFIG } from '../../styles/theme';
+
+const LINES = [
+  { id: 'overall', label: 'Overall' },
+  { id: 'line1',   label: 'Line 1'  },
+  { id: 'line2',   label: 'Line 2'  },
+  { id: 'line3',   label: 'Line 3'  },
+];
+
+const ZONE_NAMES = {
+  overall:           'All Zones',
+  line1:             'Production Line 1',
+  line2:             'Production Line 2',
+  line3:             'Production Line 3',
+  'line1-husker':    'Paddy Husker 01',
+  'line1-milling':   'Rice Milling Unit 01',
+  'line1-conveyor':  'Conveyor Belt 01',
+  'line1-palletize': 'Palletizing Robot 01',
+  'line2-husker':    'Paddy Husker 02',
+  'line2-milling':   'Rice Milling Unit 02',
+  'line2-conveyor':  'Conveyor Belt 02',
+  'line2-palletize': 'Palletizing Robot 02',
+  'line3-husker':    'Paddy Husker 03',
+  'line3-milling':   'Rice Milling Unit 03',
+  'line3-conveyor':  'Conveyor Belt 03',
+  'line3-palletize': 'Palletizing Robot 03',
+};
 
 const StageWrapper = styled.div`
   position: relative;
@@ -40,9 +67,7 @@ const StageGradient = styled.div`
 
 const StageFade = styled.div`
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 0; left: 0; right: 0;
   height: 70px;
   background: linear-gradient(to bottom, transparent, ${T.bg});
   pointer-events: none;
@@ -67,28 +92,121 @@ const ZoneLabel = styled.div`
   color: ${T.muted};
 `;
 
+/* ── Top bar ─────────────────────────────────────────────── */
+const TopBar = styled.div`
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+const LineSwitcher = styled.div`
+  display: flex;
+  gap: 5px;
+  background: rgba(255,255,255,0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.9);
+  border-radius: 999px;
+  padding: 4px;
+  box-shadow: 0 2px 12px rgba(13,17,23,0.08);
+  flex-shrink: 0;
+`;
+
+const LinePill = styled.button`
+  height: 28px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: none;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(.34,1.56,.64,1);
+  white-space: nowrap;
+  background: ${(p) => p.$active
+    ? `linear-gradient(135deg, ${T.accent}, ${T.accentM})`
+    : 'transparent'};
+  color: ${(p) => p.$active ? '#fff' : T.muted};
+  box-shadow: ${(p) => p.$active ? '0 2px 8px rgba(55,102,240,0.3)' : 'none'};
+
+  &:hover {
+    color: ${(p) => p.$active ? '#fff' : T.text};
+    background: ${(p) => p.$active
+      ? `linear-gradient(135deg, ${T.accent}, ${T.accentM})`
+      : 'rgba(55,102,240,0.08)'};
+    border-color: transparent !important;
+  }
+`;
+
+/* Inline status pill — same style as StatusBadge but no absolute position */
+const InlineStatus = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: ${(p) => STATUS_CONFIG[p.$s].bg};
+  border: 1px solid ${(p) => STATUS_CONFIG[p.$s].border};
+  border-radius: 20px;
+  padding: 5px 13px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: ${(p) => STATUS_CONFIG[p.$s].color};
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  white-space: nowrap;
+
+  &:hover { transform: scale(1.02); }
+`;
+
 export default function StageArea({
-  stageH,
-  mId,
-  currentTab,
-  navigate,
-  status,
-  onStatusClick,
+  stageH, mId, currentTab, navigate, status, onStatusClick,
 }) {
+  const activeLine = mId?.includes('-') ? mId.split('-')[0] : mId;
+
   return (
     <StageWrapper $h={stageH || 300}>
       <StageAreaBox>
-        <SmartSearchBar mId={mId} currentTab={currentTab} navigate={navigate} />
+
+        <TopBar>
+          {/* Left: line pills */}
+          <LineSwitcher>
+            {LINES.map((line) => (
+              <LinePill
+                key={line.id}
+                $active={activeLine === line.id}
+                onClick={() => navigate(`/${line.id}/${currentTab}`)}
+              >
+                {line.label}
+              </LinePill>
+            ))}
+          </LineSwitcher>
+
+          {/* Centre: search bar stretches to fill */}
+          <SmartSearchBar mId={mId} currentTab={currentTab} navigate={navigate} />
+
+          {/* Right: status badge inline */}
+          <InlineStatus $s={status} onClick={onStatusClick}>
+            <StatusDot $s={status} />
+            {STATUS_CONFIG[status].label}
+          </InlineStatus>
+        </TopBar>
 
         <SceneSwitcher mId={mId} />
-
         <StageGradient />
         <StageFade />
 
-        <StatusBadge status={status} onClick={onStatusClick} />
-
         <ZoneLabel>
-          Factory Floor · {mId === 'overall' ? 'All Zones' : 'Assembly Zone A'}
+          Factory Floor · {ZONE_NAMES[mId] || mId}
         </ZoneLabel>
       </StageAreaBox>
     </StageWrapper>
