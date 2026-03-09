@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { T } from '../../styles/theme';
 import SceneSwitcher from '../layout/SceneSwitcher';
-import MachineSelector from './MachineSelector';
+import SmartSearchBar from './SmartSearchBar';
 import StatusBadge from './StatusBadge';
 
 const StageWrapper = styled.div`
@@ -78,13 +78,7 @@ export default function StageArea({
   return (
     <StageWrapper $h={stageH || 300}>
       <StageAreaBox>
-        <MachineSelector
-          value={mId}
-          onChange={(e) => navigate(`/${e.target.value}/${currentTab}`)}
-        >
-          <option value="overall">Overall Factory</option>
-          <option value="machine1">Machine 01 — Assembly</option>
-        </MachineSelector>
+        <SmartSearchBar mId={mId} currentTab={currentTab} navigate={navigate} />
 
         <SceneSwitcher mId={mId} />
 

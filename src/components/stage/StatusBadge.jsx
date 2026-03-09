@@ -4,7 +4,7 @@ import { pulse, pulseDanger, pulseWarn } from '../../styles/animations';
 
 export const StatusBadgeWrap = styled.div`
   position: absolute;
-  top: 14px;
+  top: 66px;
   right: 14px;
   z-index: 20;
   display: flex;
