@@ -5,6 +5,7 @@ import SceneSwitcher from '../layout/SceneSwitcher';
 import SmartSearchBar from './SmartSearchBar';
 import { StatusBadgeWrap, StatusDot } from './StatusBadge';
 import { STATUS_CONFIG } from '../../styles/theme';
+import { MOCK_HEALTH_DATA } from '../../data/MockMachineData';
 
 const LINES = [
   { id: 'overall', label: 'Overall' },
@@ -168,6 +169,7 @@ const InlineStatus = styled.div`
   &:hover { transform: scale(1.02); }
 `;
 
+/*
 export default function StageArea({
   stageH, mId, currentTab, navigate, status, onStatusClick,
 }) {
@@ -178,7 +180,7 @@ export default function StageArea({
       <StageAreaBox>
 
         <TopBar>
-          {/* Left: line pills */}
+          {// Left: line pills }
           <LineSwitcher>
             {LINES.map((line) => (
               <LinePill
@@ -191,10 +193,10 @@ export default function StageArea({
             ))}
           </LineSwitcher>
 
-          {/* Centre: search bar stretches to fill */}
+          {// Centre: search bar stretches to fill 
           <SmartSearchBar mId={mId} currentTab={currentTab} navigate={navigate} />
 
-          {/* Right: status badge inline */}
+          {// Right: status badge inline }
           <InlineStatus $s={status} onClick={onStatusClick}>
             <StatusDot $s={status} />
             {STATUS_CONFIG[status].label}
@@ -208,6 +210,61 @@ export default function StageArea({
         <ZoneLabel>
           Factory Floor · {ZONE_NAMES[mId] || mId}
         </ZoneLabel>
+      </StageAreaBox>
+    </StageWrapper>
+  );
+}
+*/
+
+export default function StageArea({
+  stageH, mId, currentTab, navigate, onStatusClick,
+}) {
+  const activeLine = mId?.includes('-') ? mId.split('-')[0] : mId;
+  
+  // 获取当前机器的实时健康数据
+  const healthData = MOCK_HEALTH_DATA[mId] || MOCK_HEALTH_DATA['overall'];
+  const currentStatus = healthData.status;
+
+  return (
+    <StageWrapper $h={stageH || 300}>
+      <StageAreaBox>
+        <TopBar>
+          <LineSwitcher>
+            {LINES.map((line) => (
+              <LinePill
+                key={line.id}
+                $active={activeLine === line.id}
+                onClick={() => navigate(`/${line.id}/${currentTab}`)}
+              >
+                {line.label}
+              </LinePill>
+            ))}
+          </LineSwitcher>
+
+          <SmartSearchBar mId={mId} currentTab={currentTab} navigate={navigate} />
+
+          {/* 右侧状态按钮：颜色随数据变化 */}
+          <InlineStatus $s={currentStatus} onClick={onStatusClick}>
+            <StatusDot $s={currentStatus} />
+            {STATUS_CONFIG[currentStatus].label}
+          </InlineStatus>
+        </TopBar>
+
+        {/* 核心：3D 场景切换器 */}
+        <SceneSwitcher mId={mId} />
+
+        {/* 关键：只有在具体机器视角才显示悬浮的 HUD 资料卡 */}
+        {mId?.includes('-') && (
+  <StatusBadgeWrap $s={currentStatus} style={{ top: '35%', right: '10%' }}>
+            <div style={{ color: T.muted, fontSize: '0.55rem', marginBottom: '4px' }}>LIVE TELEMETRY</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: T.text }}>{healthData.temp}</div>
+            <div style={{ fontSize: '0.6rem', color: T.sub }}>Speed: {healthData.speed}</div>
+          </StatusBadgeWrap>
+        )}
+
+        <StageGradient />
+        <StageFade />
+        <ZoneLabel>Factory Floor · {ZONE_NAMES[mId] || mId}</ZoneLabel>
       </StageAreaBox>
     </StageWrapper>
   );
