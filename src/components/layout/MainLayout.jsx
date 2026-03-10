@@ -229,7 +229,7 @@ export default function MainLayout() {
               <Routes>
                 <Route path="dashboard" element={<Dashboard mId={mId} />} />
                 <Route path="ai-prediction" element={<AIPrediction mId={mId} />} />
-                <Route path="maintenance" element={<Maintenance />} />
+                <Route path="maintenance" element={<Maintenance mId={mId} />} />
               </Routes>
             </ContentArea>
           </BottomSection>

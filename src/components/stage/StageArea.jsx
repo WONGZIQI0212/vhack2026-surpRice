@@ -1,5 +1,5 @@
 import React from 'react';
-import styled from 'styled-components';
+import styled, { keyframes, css } from 'styled-components';
 import { T } from '../../styles/theme';
 import SceneSwitcher from '../layout/SceneSwitcher';
 import SmartSearchBar from './SmartSearchBar';
@@ -169,6 +169,43 @@ const InlineStatus = styled.div`
   &:hover { transform: scale(1.02); }
 `;
 
+/* ── Alert ring ──────────────────────────────────────────── */
+const alertRing = keyframes`
+  0%,100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.6); }
+  50%     { box-shadow: 0 0 0 8px rgba(220,38,38,0);  }
+`;
+
+const iconBlink = keyframes`
+  0%,100% { opacity: 1; }
+  50%     { opacity: 0.2; }
+`;
+
+const AlertSymbol = styled.div`
+  position: absolute;
+  top: 66px;
+  right: 14px;
+  z-index: 25;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(220,38,38,0.12);
+  border: 1.5px solid rgba(220,38,38,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  animation: ${alertRing} 0.9s ease infinite;
+`;
+
+const AlertIcon = styled.span`
+  animation: ${iconBlink} 0.8s ease infinite;
+  color: #f87171;
+  font-style: normal;
+  font-weight: 900;
+  font-size: 0.9rem;
+  line-height: 1;
+`;
+
 /*
 export default function StageArea({
   stageH, mId, currentTab, navigate, status, onStatusClick,
@@ -253,13 +290,26 @@ export default function StageArea({
         {/* 核心：3D 场景切换器 */}
         <SceneSwitcher mId={mId} />
 
-        {/* 关键：只有在具体机器视角才显示悬浮的 HUD 资料卡 */}
+        {/* HUD: machine view only */}
         {mId?.includes('-') && (
-  <StatusBadgeWrap $s={currentStatus} style={{ top: '35%', right: '10%' }}>
+          <StatusBadgeWrap $s={currentStatus} style={{ top: '35%', right: '10%' }}>
             <div style={{ color: T.muted, fontSize: '0.55rem', marginBottom: '4px' }}>LIVE TELEMETRY</div>
-            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: T.text }}>{healthData.temp}</div>
+            <div style={{
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              color: parseFloat(healthData.temp) >= 65 ? '#dc2626' : T.text,
+            }}>
+              {healthData.temp}
+            </div>
             <div style={{ fontSize: '0.6rem', color: T.sub }}>Speed: {healthData.speed}</div>
           </StatusBadgeWrap>
+        )}
+
+        {/* Alert ring — only when temp is high (≥65°C) */}
+        {mId?.includes('-') && parseFloat(healthData.temp) >= 65 && (
+          <AlertSymbol>
+            <AlertIcon>!</AlertIcon>
+          </AlertSymbol>
         )}
 
         <StageGradient />
