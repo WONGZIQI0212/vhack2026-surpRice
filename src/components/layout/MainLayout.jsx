@@ -13,6 +13,11 @@ import Dashboard from '../../pages/Dashboard';
 import AIPrediction from '../../pages/AIPrediction';
 import Maintenance from '../../pages/Maintenance';
 
+// 根据实际文件路径调整导入
+import AnomalyBanner from './AnomalyBanner';               // 如果 AnomalyBanner 与 MainLayout 同目录
+import AnomalyModal from '../stage/AnomalyModal';          // 如果 AnomalyModal 在 stage 目录
+import useAnomalyMode from '../../hooks/useAnomalyMode';
+
 const PageContainer = styled.div`
   width: 100vw;
   height: 100vh;
@@ -154,11 +159,59 @@ export default function MainLayout() {
   const startY = useRef(0);
   const startH = useRef(0);
 
+  // 异常模式 Hook
+  const {
+    isAnomaly,
+    anomalyTriggered,
+    triggerAnomaly,
+    resetAnomaly,
+    getBannerInfo,
+    getMachineStatus,
+  } = useAnomalyMode();
+
+  const [showModal, setShowModal] = useState(false);
+  const [modalFilter, setModalFilter] = useState('overall');
+
+  const [historicalAlerts, setHistoricalAlerts] = useState([]);
+
+  const handleResolveAlert = (machineId, action) => {
+    const newHistoryEntry = {
+      id: Date.now(), // 临时唯一ID
+      machine: machineId,
+      issue: action === 'maintenance' ? 'Maintenance contacted' : 'Emergency stop',
+      time: 'just now',
+    };
+    setHistoricalAlerts(prev => [newHistoryEntry, ...prev]);
+  }
+  
+  
+  // 初始化 3D 区域高度
   useEffect(() => {
     if (bodyRef.current) {
       setStageH(Math.round(bodyRef.current.clientHeight * 0.52));
     }
   }, []);
+
+  // 当异常触发时自动打开弹窗
+  useEffect(() => {
+    if (anomalyTriggered) {
+      setShowModal(true);
+    }
+  }, [anomalyTriggered]);
+
+  // 根据当前视图获取横幅信息
+  const bannerInfo = getBannerInfo(mId);
+
+  const handleBannerClick = () => {
+    setShowModal(true);
+  };
+
+  const handleViewDetails = (machineId) => {
+    // 跳转到对应机器的 AI Prediction 页面
+    navigate(`/${machineId}/ai-prediction`);
+    // 可以选择关闭弹窗（若需要，取消下面注释）
+    // setShowModal(false);
+  };
 
   const onMouseDown = useCallback(
     (e) => {
@@ -213,6 +266,13 @@ export default function MainLayout() {
             navigate={navigate}
             status={status}
             onStatusClick={() => setStatusIdx((i) => (i + 1) % STATUSES.length)}
+            getMachineStatus={getMachineStatus}   // 传递异常状态覆盖函数
+          />
+
+          <AnomalyBanner
+            color={bannerInfo.color}
+            message={bannerInfo.message}
+            onClick={handleBannerClick}
           />
 
           <DragHandle $dragging={dragging.current} onMouseDown={onMouseDown} />
@@ -234,6 +294,35 @@ export default function MainLayout() {
             </ContentArea>
           </BottomSection>
         </ResizableBody>
+
+        {/* 异常弹窗 */}
+        <AnomalyModal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          filter={modalFilter}
+          onFilterChange={setModalFilter}
+          onViewDetails={handleViewDetails}
+          historicalAlerts={historicalAlerts}          // 传递历史记录列表
+          onResolveAlert={handleResolveAlert}
+        />
+
+        {/* 隐藏触发器（右下角透明按钮） */}
+        <button
+          onClick={triggerAnomaly}
+          style={{
+            position: 'fixed',
+            bottom: '10px',
+            right: '10px',
+            width: '30px',
+            height: '30px',
+            opacity: 0.1,
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            zIndex: 999,
+          }}
+          title="Trigger Anomaly"
+        />
       </PageContainer>
     </>
   );
