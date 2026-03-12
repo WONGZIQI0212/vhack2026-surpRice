@@ -3,6 +3,7 @@ import styled, { css, keyframes } from 'styled-components';
 import GlassCard from '../components/ui/GlassCard';
 import { T, STATUS_CONFIG } from '../styles/theme';
 import { MOCK_HEALTH_DATA, getLineHealth } from '../data/MockMachineData';
+import { useAnomaly } from '../context/AnomalyContext';
 
 /* ── Animations ────────────────────────────────────────────── */
 const fillBar = keyframes`
@@ -64,6 +65,7 @@ const AlertCard = styled(GlassCard)`
       : p.$status === 'warning'
       ? css`${borderPulseWarn} 1.8s ease infinite`
       : 'none'};
+  min-height: 260px;
 `;
 
 /* Status chip inside card */
@@ -221,13 +223,15 @@ const VitalValue = styled.div`
 
 /* ── Main component ────────────────────────────────────────── */
 export default function Dashboard({ mId }) {
+  const { getMachineData } = useAnomaly() || {};
   const isOverall = mId === 'overall';
   const isLine    = ['line1', 'line2', 'line3'].includes(mId);
   const isMachine = mId?.includes('-');
 
   // Pull data from the right source depending on view level
   const lineHealth = isLine ? getLineHealth(mId) : null;
-  const data = lineHealth || MOCK_HEALTH_DATA[mId] || MOCK_HEALTH_DATA['overall'];
+  const originalData = lineHealth || MOCK_HEALTH_DATA[mId] || MOCK_HEALTH_DATA['overall'];
+  const data = getMachineData ? getMachineData(mId, originalData) : originalData;
   const status = data.status;
 
   const tempVal     = parseFloat(data.temp) || 0;

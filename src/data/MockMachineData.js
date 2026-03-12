@@ -93,12 +93,12 @@ export const MOCK_HEALTH_DATA = {
   },
 
   'line2-conveyor': {
-    status:      'warning',   // ← the warning machine
-    temp:        '54.7°C',   // amber zone (55°C threshold)
-    speed:       '0.9 m/s',
-    vibration:   '2.1 mm/s', // amber zone (1.5–3)
-    healthScore: 76,
-    metrics:     [55, 58, 62, 67, 70, 74, 76],  // rising trend → bad sign
+    status:      'normal',        
+    temp:        '45.2°C',       
+    speed:       '1.1 m/s',
+    vibration:   '1.2 mm/s',     
+    healthScore: 92,               
+    metrics:     [88, 89, 90, 91, 91, 92, 92], 
   },
 
   'line2-palletize': {
@@ -143,12 +143,12 @@ export const MOCK_HEALTH_DATA = {
   },
 
   'line3-palletize': {
-    status:      'emergency', // ← the emergency machine
-    temp:        '74.2°C',   // red zone (> 65°C)
-    speed:       '11 boxes/min',
-    vibration:   '3.8 mm/s', // red zone (> 3)
-    healthScore: 58,
-    metrics:     [62, 65, 70, 76, 82, 90, 97],  // sharply rising → critical
+    status:      'normal',        
+    temp:        '50.1°C',        
+    speed:       '18 boxes/min',
+    vibration:   '1.0 mm/s',      
+    healthScore: 92,               
+    metrics:     [88, 89, 90, 91, 91, 92, 92],
   },
 
 };
