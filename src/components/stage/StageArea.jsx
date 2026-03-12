@@ -254,14 +254,14 @@ export default function StageArea({
 */
 
 export default function StageArea({
-  stageH, mId, currentTab, navigate, onStatusClick, getMachineStatus
+  stageH, mId, currentTab, navigate, onStatusClick, getMachineData
 }) {
   const activeLine = mId?.includes('-') ? mId.split('-')[0] : mId;
   
-  // 获取当前机器的实时健康数据
-  const healthData = MOCK_HEALTH_DATA[mId] || MOCK_HEALTH_DATA['overall'];
-  const overrideStatus = getMachineStatus ? getMachineStatus(mId) : null;
-  const currentStatus = overrideStatus || healthData.status;
+  const originalData = MOCK_HEALTH_DATA[mId] || MOCK_HEALTH_DATA['overall'];
+  const healthData = getMachineData ? getMachineData(mId, originalData) : originalData;
+  const currentStatus = healthData.status;
+  
   return (
     <StageWrapper $h={stageH || 300}>
       <StageAreaBox>

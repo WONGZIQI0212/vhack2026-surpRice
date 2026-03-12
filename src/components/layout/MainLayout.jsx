@@ -17,6 +17,7 @@ import Maintenance from '../../pages/Maintenance';
 import AnomalyBanner from './AnomalyBanner';               // 如果 AnomalyBanner 与 MainLayout 同目录
 import AnomalyModal from '../stage/AnomalyModal';          // 如果 AnomalyModal 在 stage 目录
 import useAnomalyMode from '../../hooks/useAnomalyMode';
+import { AnomalyContext } from '../../context/AnomalyContext';
 
 const PageContainer = styled.div`
   width: 100vw;
@@ -143,7 +144,7 @@ const ContentArea = styled.main`
   padding: 12px 24px 16px 24px;
   display: flex;
   gap: 12px;
-  overflow: hidden;
+  overflow-y: auto; 
 `;
 
 export default function MainLayout() {
@@ -159,7 +160,9 @@ export default function MainLayout() {
   const startY = useRef(0);
   const startH = useRef(0);
 
-  // 异常模式 Hook
+  const [statusIdx, setStatusIdx] = useState(0);
+  const status = STATUSES[statusIdx];
+
   const {
     isAnomaly,
     anomalyTriggered,
@@ -167,22 +170,23 @@ export default function MainLayout() {
     resetAnomaly,
     getBannerInfo,
     getMachineStatus,
+    getMachineData,
   } = useAnomalyMode();
 
+  const bannerInfo = getBannerInfo(mId);
   const [showModal, setShowModal] = useState(false);
   const [modalFilter, setModalFilter] = useState('overall');
-
   const [historicalAlerts, setHistoricalAlerts] = useState([]);
 
   const handleResolveAlert = (machineId, action) => {
-    const newHistoryEntry = {
-      id: Date.now(), // 临时唯一ID
-      machine: machineId,
+    const newEntry = {
+      id: Date.now(),
+      machine: machineId === 'line3-palletize' ? 'Line 3 · Palletizing Robot' : 'Line 2 · Conveyor Belt',
       issue: action === 'maintenance' ? 'Maintenance contacted' : 'Emergency stop',
       time: 'just now',
     };
-    setHistoricalAlerts(prev => [newHistoryEntry, ...prev]);
-  }
+    setHistoricalAlerts(prev => [newEntry, ...prev]);
+  };
   
   
   // 初始化 3D 区域高度
@@ -199,18 +203,12 @@ export default function MainLayout() {
     }
   }, [anomalyTriggered]);
 
-  // 根据当前视图获取横幅信息
-  const bannerInfo = getBannerInfo(mId);
-
   const handleBannerClick = () => {
     setShowModal(true);
   };
 
   const handleViewDetails = (machineId) => {
-    // 跳转到对应机器的 AI Prediction 页面
     navigate(`/${machineId}/ai-prediction`);
-    // 可以选择关闭弹窗（若需要，取消下面注释）
-    // setShowModal(false);
   };
 
   const onMouseDown = useCallback(
@@ -248,13 +246,13 @@ export default function MainLayout() {
     };
   }, []);
 
-  const [statusIdx, setStatusIdx] = useState(0);
-  const status = STATUSES[statusIdx];
-
+  const anomalyValue = {
+    getMachineData,   // 提供给子组件
+  };
+  
   return (
-    <>
+    <AnomalyContext.Provider value={anomalyValue}>
       <GlobalStyle />
-
       <PageContainer>
         <Header />
 
@@ -266,13 +264,7 @@ export default function MainLayout() {
             navigate={navigate}
             status={status}
             onStatusClick={() => setStatusIdx((i) => (i + 1) % STATUSES.length)}
-            getMachineStatus={getMachineStatus}   // 传递异常状态覆盖函数
-          />
-
-          <AnomalyBanner
-            color={bannerInfo.color}
-            message={bannerInfo.message}
-            onClick={handleBannerClick}
+            getMachineData={getMachineData}   // ✅ 修正为 getMachineData
           />
 
           <DragHandle $dragging={dragging.current} onMouseDown={onMouseDown} />
@@ -285,6 +277,12 @@ export default function MainLayout() {
               <TabLink to={`/${mId}/maintenance`}>Maintenance Schedule</TabLink>
             </TabBar>
 
+            <AnomalyBanner
+              color={bannerInfo.color}
+              message={bannerInfo.message}
+              onClick={() => setShowModal(true)}
+            />
+
             <ContentArea>
               <Routes>
                 <Route path="dashboard" element={<Dashboard mId={mId} />} />
@@ -295,18 +293,15 @@ export default function MainLayout() {
           </BottomSection>
         </ResizableBody>
 
-        {/* 异常弹窗 */}
         <AnomalyModal
           isOpen={showModal}
           onClose={() => setShowModal(false)}
           filter={modalFilter}
           onFilterChange={setModalFilter}
           onViewDetails={handleViewDetails}
-          historicalAlerts={historicalAlerts}          // 传递历史记录列表
+          historicalAlerts={historicalAlerts}
           onResolveAlert={handleResolveAlert}
         />
-
-        {/* 隐藏触发器（右下角透明按钮） */}
         <button
           onClick={triggerAnomaly}
           style={{
@@ -324,6 +319,6 @@ export default function MainLayout() {
           title="Trigger Anomaly"
         />
       </PageContainer>
-    </>
+    </AnomalyContext.Provider>
   );
 }

@@ -6,6 +6,23 @@ const AFFECTED_MACHINES = {
   alert: 'line3-palletize',    // Line 3 Palletizing Robot
 };
 
+const ANOMALY_OVERRIDES = {
+  'line2-conveyor': {
+    status: 'warning',
+    temp: '54.7°C',
+    vibration: '2.1 mm/s',
+    healthScore: 76,
+    metrics: [55, 58, 62, 67, 70, 74, 76],
+  },
+  'line3-palletize': {
+    status: 'emergency',
+    temp: '74.2°C',
+    vibration: '3.8 mm/s',
+    healthScore: 58,
+    metrics: [62, 65, 70, 76, 82, 90, 97],
+  },
+};
+
 export default function useAnomalyMode() {
   const [isAnomaly, setIsAnomaly] = useState(false);
   const [anomalyTriggered, setAnomalyTriggered] = useState(false); // 是否已触发（用于控制弹窗自动弹出）
@@ -84,13 +101,21 @@ export default function useAnomalyMode() {
     return null;
   }, [isAnomaly]);
 
+  const getMachineData = useCallback((machineId, originalData) => {
+    if (!isAnomaly) return originalData;
+    const override = ANOMALY_OVERRIDES[machineId];
+    if (!override) return originalData;
+    return { ...originalData, ...override };
+  }, [isAnomaly]);
+  
   return {
     isAnomaly,
     anomalyTriggered,
     triggerAnomaly,
     resetAnomaly,
     getBannerInfo,
-    getMachineStatus,
+    getMachineStatus, 
+    getMachineData,   
     affectedMachines: AFFECTED_MACHINES,
   };
 }
