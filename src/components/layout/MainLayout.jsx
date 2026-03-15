@@ -144,7 +144,8 @@ const ContentArea = styled.main`
   padding: 12px 24px 16px 24px;
   display: flex;
   gap: 12px;
-  overflow-y: auto; 
+  overflow: hidden;
+  min-height: 0;
 `;
 
 export default function MainLayout() {
@@ -162,6 +163,7 @@ export default function MainLayout() {
 
   const [statusIdx, setStatusIdx] = useState(0);
   const status = STATUSES[statusIdx];
+  const [showNewMachine, setShowNewMachine] = useState(false);
 
   const {
     isAnomaly,
@@ -187,8 +189,8 @@ export default function MainLayout() {
     };
     setHistoricalAlerts(prev => [newEntry, ...prev]);
   };
-  
-  
+
+
   // 初始化 3D 区域高度
   useEffect(() => {
     if (bodyRef.current) {
@@ -249,7 +251,7 @@ export default function MainLayout() {
   const anomalyValue = {
     getMachineData,   // 提供给子组件
   };
-  
+
   return (
     <AnomalyContext.Provider value={anomalyValue}>
       <GlobalStyle />
@@ -264,7 +266,8 @@ export default function MainLayout() {
             navigate={navigate}
             status={status}
             onStatusClick={() => setStatusIdx((i) => (i + 1) % STATUSES.length)}
-            getMachineData={getMachineData}   // ✅ 修正为 getMachineData
+            getMachineData={getMachineData}
+            showNewMachine={showNewMachine}
           />
 
           <DragHandle $dragging={dragging.current} onMouseDown={onMouseDown} />
@@ -286,7 +289,15 @@ export default function MainLayout() {
             <ContentArea>
               <Routes>
                 <Route path="dashboard" element={<Dashboard mId={mId} />} />
-                <Route path="ai-prediction" element={<AIPrediction mId={mId} />} />
+                <Route
+                  path="ai-prediction"
+                  element={
+                    <AIPrediction
+                      mId={mId}
+                      onNewMachineSelect={(id) => setShowNewMachine(!!id)}
+                    />
+                  }
+                />
                 <Route path="maintenance" element={<Maintenance mId={mId} />} />
               </Routes>
             </ContentArea>

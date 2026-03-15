@@ -254,7 +254,7 @@ export default function StageArea({
 */
 
 export default function StageArea({
-  stageH, mId, currentTab, navigate, onStatusClick, getMachineData
+  stageH, mId, currentTab, navigate, onStatusClick, getMachineData, showNewMachine
 }) {
   const activeLine = mId?.includes('-') ? mId.split('-')[0] : mId;
   
@@ -288,7 +288,7 @@ export default function StageArea({
         </TopBar>
 
         {/* 核心：3D 场景切换器 */}
-        <SceneSwitcher mId={mId} />
+        <SceneSwitcher mId={mId} showNewMachine={showNewMachine} />
 
         {/* HUD: machine view only */}
         {mId?.includes('-') && (

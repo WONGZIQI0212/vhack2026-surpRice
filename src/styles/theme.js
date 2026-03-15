@@ -34,6 +34,7 @@ export const SCENES = {
   'line3-milling':   'https://prod.spline.design/E1yPSylDXpxES12h/scene.splinecode',
   'line3-conveyor':  'https://prod.spline.design/AVnDlm8ldubSYRp3/scene.splinecode',
   'line3-palletize': 'https://prod.spline.design/xBjY82aX8ga9IQxV/scene.splinecode',
+  'new-machine': 'https://prod.spline.design/1X5B3Z3VQHwTgb7t/scene.splinecode',
 };
 
 export const CAM_START = { x: 900, y: 600, z: 900 };

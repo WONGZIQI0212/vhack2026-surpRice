@@ -5,58 +5,28 @@ import { SCENES } from '../../styles/theme';
 
 // ─── Keyframe animations ─────────────────────────────────────────────────────
 
-// Machine scene enters: starts zoomed-in (scale 1.12), eases out to normal.
-// Combined with fade-in → feels like camera lands inside the machine.
 const zoomInEnter = keyframes`
-  from {
-    opacity: 0;
-    transform: scale(1.12);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(1.12); }
+  to   { opacity: 1; transform: scale(1); }
 `;
 
-// Factory scene exits toward machine: zooms slightly toward camera as it fades.
 const zoomOutExit = keyframes`
-  from {
-    opacity: 1;
-    transform: scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: scale(1.08);
-  }
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(1.08); }
 `;
 
-// Machine scene exits: shrinks away as camera pulls back to factory.
 const zoomOutBack = keyframes`
-  from {
-    opacity: 1;
-    transform: scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: scale(0.94);
-  }
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.94); }
 `;
 
-// Factory scene re-enters: grows in from slightly smaller.
 const zoomInBack = keyframes`
-  from {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
 `;
 
 // ─── Styled layer ─────────────────────────────────────────────────────────────
-// $state: 'idle' | 'entering-machine' | 'exiting-to-machine' |
-//         'entering-factory' | 'exiting-to-factory'
+
 const SceneLayer = styled.div`
   position: absolute;
   inset: 0;
@@ -111,6 +81,7 @@ const LoadingSpinner = styled.div`
 `;
 
 // ─── Constants ────────────────────────────────────────────────────────────────
+
 const TRIGGER_OBJECTS = {
   overall: 'TriggerOverall',
   line1:   'TriggerLine1',
@@ -124,28 +95,30 @@ const MACHINE_IDS = [
   'line3-husker', 'line3-milling', 'line3-conveyor', 'line3-palletize',
 ];
 
-const isFactory = (mId) => mId in TRIGGER_OBJECTS;
+const isFactory = (id) => id in TRIGGER_OBJECTS;
+const isNewMachine = (id) => id === 'new-machine';
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export default function SceneSwitcher({ mId }) {
+
+export default function SceneSwitcher({ mId, showNewMachine }) {
   const factoryApp   = useRef(null);
   const factoryReady = useRef(false);
   const pendingMId   = useRef(null);
   const triggerTimer = useRef(null);
 
-  // Which scene is actually rendered as active
   const [activeMId, setActiveMId] = useState(mId);
   const prevMId = useRef(mId);
 
-  // Animation state per scene key
-  // key → 'idle-visible' | 'idle-hidden' | 'entering-machine' | 'exiting-to-machine' | 'entering-factory' | 'exiting-to-factory'
+  // Track previous showNewMachine to detect toggle
+  const prevShowNew = useRef(false);
+
   const [states, setStates] = useState(() => {
-    const s = { factory: isFactory(mId) ? 'idle-visible' : 'idle-hidden' };
+    const s = { factory: isFactory(mId) ? 'idle-visible' : 'idle-hidden', 'new-machine': 'idle-hidden' };
     MACHINE_IDS.forEach((id) => { s[id] = mId === id ? 'idle-visible' : 'idle-hidden'; });
     return s;
   });
 
-  const [loaded, setLoaded] = useState({ factory: false });
+  const [loaded, setLoaded] = useState({ factory: false, 'new-machine': false });
   const markLoaded = (key) => setLoaded((l) => ({ ...l, [key]: true }));
 
   // ── Spline trigger ───────────────────────────────────────────────────────
@@ -168,31 +141,67 @@ export default function SceneSwitcher({ mId }) {
     }, 800);
   };
 
-  // ── Transition orchestration ─────────────────────────────────────────────
+  // ── Handle showNewMachine toggle ─────────────────────────────────────────
+  useEffect(() => {
+    const prev = prevShowNew.current;
+    prevShowNew.current = showNewMachine;
+
+    if (showNewMachine && !prev) {
+      // Switch to new-machine scene
+      const currentActive = activeMId;
+      setStates((s) => ({ ...s, [currentActive]: 'exiting-to-machine' }));
+      setTimeout(() => {
+        setActiveMId('new-machine');
+        setStates((s) => ({
+          ...s,
+          [currentActive]: 'idle-hidden',
+          'new-machine': 'entering-machine',
+        }));
+        setTimeout(() => {
+          setStates((s) => ({ ...s, 'new-machine': 'idle-visible' }));
+        }, 750);
+      }, 400);
+    } else if (!showNewMachine && prev) {
+      // Switch back to original scene
+      setStates((s) => ({ ...s, 'new-machine': 'exiting-to-factory' }));
+      setTimeout(() => {
+        setActiveMId(mId);
+        setStates((s) => ({
+          ...s,
+          'new-machine': 'idle-hidden',
+          [isFactory(mId) ? 'factory' : mId]: 'entering-factory',
+        }));
+        setTimeout(() => {
+          const key = isFactory(mId) ? 'factory' : mId;
+          setStates((s) => ({ ...s, [key]: 'idle-visible' }));
+          if (isFactory(mId) && factoryReady.current) doTrigger(factoryApp.current, mId);
+        }, 650);
+      }, 400);
+    }
+  }, [showNewMachine]);
+
+  // ── mId transition orchestration ─────────────────────────────────────────
   useEffect(() => {
     const next = mId;
     const prev = prevMId.current;
     prevMId.current = next;
 
     if (next === prev) return;
+    if (showNewMachine) return; // don't interfere while showing new machine
 
-    const goingToMachine  = !isFactory(next);
-    const goingToFactory  = isFactory(next);
-    const fromMachine     = !isFactory(prev);
+    const goingToMachine = !isFactory(next);
+    const goingToFactory = isFactory(next);
+    const fromMachine    = !isFactory(prev);
 
-    // Exit duration must match the CSS animation duration above
     const EXIT_DURATION = goingToMachine ? 500 : 450;
-    const ENTER_DELAY   = EXIT_DURATION - 100; // slight overlap for smoothness
+    const ENTER_DELAY   = EXIT_DURATION - 100;
 
     if (goingToMachine) {
-      // Factory zooms toward camera while fading out
-      // Machine scene grows in from a zoomed state
       setStates((s) => ({
         ...s,
         factory: 'exiting-to-machine',
-        [next]: 'idle-hidden', // reset first in case it was mid-animation
+        [next]: 'idle-hidden',
       }));
-
       setTimeout(() => {
         setActiveMId(next);
         setStates((s) => ({
@@ -201,21 +210,14 @@ export default function SceneSwitcher({ mId }) {
           [prev]: 'idle-hidden',
           [next]: 'entering-machine',
         }));
-        // After enter animation, settle to idle
         setTimeout(() => {
           setStates((s) => ({ ...s, [next]: 'idle-visible' }));
         }, 750);
       }, ENTER_DELAY);
-
     } else if (goingToFactory) {
-      // Machine shrinks away while factory grows back in
       if (fromMachine) {
-        setStates((s) => ({
-          ...s,
-          [prev]: 'exiting-to-factory',
-        }));
+        setStates((s) => ({ ...s, [prev]: 'exiting-to-factory' }));
       }
-
       setTimeout(() => {
         setActiveMId(next);
         setStates((s) => ({
@@ -228,7 +230,6 @@ export default function SceneSwitcher({ mId }) {
         }, 650);
       }, ENTER_DELAY);
 
-      // Fire Spline line trigger slightly after factory starts entering
       if (isFactory(next)) {
         if (!factoryReady.current) { pendingMId.current = next; }
         else {
@@ -244,31 +245,40 @@ export default function SceneSwitcher({ mId }) {
 
   useEffect(() => () => { if (triggerTimer.current) clearTimeout(triggerTimer.current); }, []);
 
-  const currentIsFactory = isFactory(activeMId);
-  const isLoading = currentIsFactory ? !loaded.factory : !loaded[activeMId];
+  const currentIsFactory  = isFactory(activeMId);
+  const currentIsNewMachine = activeMId === 'new-machine';
+  const isLoading =
+    currentIsFactory    ? !loaded.factory :
+    currentIsNewMachine ? !loaded['new-machine'] :
+    !loaded[activeMId];
 
   return (
     <>
-      <SceneLayer
-        $state={states.factory}
-        $active={currentIsFactory}
-      >
+      {/* Factory scene */}
+      <SceneLayer $state={states.factory} $active={currentIsFactory}>
         <Suspense fallback={null}>
           <Spline scene={SCENES.factory} onLoad={handleFactoryLoad} />
         </Suspense>
       </SceneLayer>
 
+      {/* Individual machine scenes */}
       {MACHINE_IDS.map((id) => (
-        <SceneLayer
-          key={id}
-          $state={states[id]}
-          $active={activeMId === id}
-        >
+        <SceneLayer key={id} $state={states[id]} $active={activeMId === id}>
           <Suspense fallback={null}>
             <Spline scene={SCENES[id]} onLoad={() => markLoaded(id)} />
           </Suspense>
         </SceneLayer>
       ))}
+
+      {/* New machine preview scene (green) */}
+      <SceneLayer $state={states['new-machine']} $active={currentIsNewMachine}>
+        <Suspense fallback={null}>
+          <Spline
+            scene={SCENES['new-machine']}
+            onLoad={() => markLoaded('new-machine')}
+          />
+        </Suspense>
+      </SceneLayer>
 
       <LoadingOverlay $visible={isLoading}>
         <LoadingSpinner />
