@@ -39,6 +39,7 @@ const StageWrapper = styled.div`
   min-height: 120px;
   flex-shrink: 0;
   margin: 12px 24px 0;
+  z-index: 1;
 `;
 
 const StageAreaBox = styled.section`
@@ -55,6 +56,7 @@ const StageAreaBox = styled.section`
     0 2px 4px rgba(13,17,23,0.04),
     0 12px 40px rgba(13,17,23,0.08);
   position: relative;
+  isolation: isolate;
 `;
 
 const StageGradient = styled.div`

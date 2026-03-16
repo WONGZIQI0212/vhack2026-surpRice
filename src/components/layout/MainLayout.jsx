@@ -13,9 +13,8 @@ import Dashboard from '../../pages/Dashboard';
 import AIPrediction from '../../pages/AIPrediction';
 import Maintenance from '../../pages/Maintenance';
 
-// 根据实际文件路径调整导入
-import AnomalyBanner from './AnomalyBanner';               // 如果 AnomalyBanner 与 MainLayout 同目录
-import AnomalyModal from '../stage/AnomalyModal';          // 如果 AnomalyModal 在 stage 目录
+import AnomalyBanner from './AnomalyBanner';
+import AnomalyModal from '../stage/AnomalyModal';
 import useAnomalyMode from '../../hooks/useAnomalyMode';
 import { AnomalyContext } from '../../context/AnomalyContext';
 
@@ -35,6 +34,7 @@ const ResizableBody = styled.div`
   flex-direction: column;
   overflow: hidden;
   position: relative;
+  min-height: 0;
 `;
 
 const DragHandle = styled.div`
@@ -68,11 +68,14 @@ const BottomSection = styled.div`
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  min-height: 80px;
+  min-height: 0;
+  position: relative;
+  z-index: 20;
 `;
 
 const TabBar = styled.nav`
   height: 7vh;
+  min-height: 54px;
   flex-shrink: 0;
   display: flex;
   justify-content: flex-start;
@@ -141,11 +144,38 @@ const TabLink = styled(NavLink)`
 
 const ContentArea = styled.main`
   flex: 1;
-  padding: 12px 24px 16px 24px;
-  display: flex;
-  gap: 12px;
-  overflow: hidden;
   min-height: 0;
+  padding: 12px 24px 16px 24px;
+  overflow: hidden;
+  display: block;
+  position: relative;
+  z-index: 21;
+`;
+
+const PageScrollArea = styled.div`
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(160, 174, 192, 0.45);
+    border-radius: 999px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(120, 138, 160, 0.7);
+  }
 `;
 
 export default function MainLayout() {
@@ -166,12 +196,9 @@ export default function MainLayout() {
   const [showNewMachine, setShowNewMachine] = useState(false);
 
   const {
-    isAnomaly,
     anomalyTriggered,
     triggerAnomaly,
-    resetAnomaly,
     getBannerInfo,
-    getMachineStatus,
     getMachineData,
   } = useAnomalyMode();
 
@@ -183,31 +210,27 @@ export default function MainLayout() {
   const handleResolveAlert = (machineId, action) => {
     const newEntry = {
       id: Date.now(),
-      machine: machineId === 'line3-palletize' ? 'Line 3 · Palletizing Robot' : 'Line 2 · Conveyor Belt',
+      machine:
+        machineId === 'line3-palletize'
+          ? 'Line 3 · Palletizing Robot'
+          : 'Line 2 · Conveyor Belt',
       issue: action === 'maintenance' ? 'Maintenance contacted' : 'Emergency stop',
       time: 'just now',
     };
-    setHistoricalAlerts(prev => [newEntry, ...prev]);
+    setHistoricalAlerts((prev) => [newEntry, ...prev]);
   };
 
-
-  // 初始化 3D 区域高度
   useEffect(() => {
     if (bodyRef.current) {
       setStageH(Math.round(bodyRef.current.clientHeight * 0.52));
     }
   }, []);
 
-  // 当异常触发时自动打开弹窗
   useEffect(() => {
     if (anomalyTriggered) {
       setShowModal(true);
     }
   }, [anomalyTriggered]);
-
-  const handleBannerClick = () => {
-    setShowModal(true);
-  };
 
   const handleViewDetails = (machineId) => {
     navigate(`/${machineId}/ai-prediction`);
@@ -249,7 +272,7 @@ export default function MainLayout() {
   }, []);
 
   const anomalyValue = {
-    getMachineData,   // 提供给子组件
+    getMachineData,
   };
 
   return (
@@ -287,19 +310,21 @@ export default function MainLayout() {
             />
 
             <ContentArea>
-              <Routes>
-                <Route path="dashboard" element={<Dashboard mId={mId} />} />
-                <Route
-                  path="ai-prediction"
-                  element={
-                    <AIPrediction
-                      mId={mId}
-                      onNewMachineSelect={(id) => setShowNewMachine(!!id)}
-                    />
-                  }
-                />
-                <Route path="maintenance" element={<Maintenance mId={mId} />} />
-              </Routes>
+              <PageScrollArea>
+                <Routes>
+                  <Route path="dashboard" element={<Dashboard mId={mId} />} />
+                  <Route
+                    path="ai-prediction"
+                    element={
+                      <AIPrediction
+                        mId={mId}
+                        onNewMachineSelect={(id) => setShowNewMachine(!!id)}
+                      />
+                    }
+                  />
+                  <Route path="maintenance" element={<Maintenance mId={mId} />} />
+                </Routes>
+              </PageScrollArea>
             </ContentArea>
           </BottomSection>
         </ResizableBody>
@@ -313,6 +338,7 @@ export default function MainLayout() {
           historicalAlerts={historicalAlerts}
           onResolveAlert={handleResolveAlert}
         />
+
         <button
           onClick={triggerAnomaly}
           style={{
