@@ -2,8 +2,8 @@ import { useState, useCallback } from 'react';
 
 // 定义受影响的机器
 const AFFECTED_MACHINES = {
-  warning: 'line2-conveyor',   // Line 2 Conveyor Belt
-  alert: 'line3-palletize',    // Line 3 Palletizing Robot
+  warning: 'line2-conveyor',
+  alert: 'line3-palletize',
 };
 
 const ANOMALY_OVERRIDES = {
@@ -23,22 +23,121 @@ const ANOMALY_OVERRIDES = {
   },
 };
 
+const ACTIVE_ANOMALIES = [
+  {
+    id: 'warning-1',
+    machineId: 'line2-conveyor',
+    machine: 'Line 2 · Conveyor Belt',
+    issue: 'Abnormal vibration detected',
+    severity: 'warning',
+  },
+  {
+    id: 'alert-1',
+    machineId: 'line3-palletize',
+    machine: 'Line 3 · Palletizing Robot',
+    issue: 'Motor temperature exceeded safe limit',
+    severity: 'alert',
+  },
+];
+
+const formatTime = (date = new Date()) => {
+  return date.toLocaleString('en-MY', {
+    hour: '2-digit',
+    minute: '2-digit',
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+};
+
 export default function useAnomalyMode() {
   const [isAnomaly, setIsAnomaly] = useState(false);
-  const [anomalyTriggered, setAnomalyTriggered] = useState(false); // 是否已触发（用于控制弹窗自动弹出）
+  const [anomalyTriggered, setAnomalyTriggered] = useState(false);
 
-  // 触发异常（由隐藏按钮调用）
+  // 历史异常记录
+  const [historicalAlerts, setHistoricalAlerts] = useState([
+    {
+      id: 'history-1',
+      machineId: 'line1-husker',
+      machine: 'Line 1 · Husker',
+      issue: 'Minor temperature spike',
+      severity: 'warning',
+      time: '15 Mar 2026, 10:14 AM',
+      status: 'resolved',
+      actionTaken: 'maintenance',
+    },
+    {
+      id: 'history-2',
+      machineId: 'line2-milling',
+      machine: 'Line 2 · Milling',
+      issue: 'Short vibration fluctuation',
+      severity: 'warning',
+      time: '16 Mar 2026, 03:42 PM',
+      status: 'resolved',
+      actionTaken: 'inspection',
+    },
+  ]);
+
+  const pushActiveAnomaliesToHistory = useCallback(() => {
+    const now = formatTime();
+
+    setHistoricalAlerts((prev) => {
+      const existingActiveMachineIds = prev
+        .filter((item) => item.status === 'active')
+        .map((item) => item.machineId);
+
+      const newItems = ACTIVE_ANOMALIES
+        .filter((item) => !existingActiveMachineIds.includes(item.machineId))
+        .map((item) => ({
+          ...item,
+          time: now,
+          status: 'active',
+          actionTaken: null,
+        }));
+
+      return [...newItems, ...prev];
+    });
+  }, []);
+
+  // 触发异常
   const triggerAnomaly = useCallback(() => {
-    if (!isAnomaly) {
-      setIsAnomaly(true);
-      setAnomalyTriggered(true);
-    }
-  }, [isAnomaly]);
+    setIsAnomaly(true);
+    setAnomalyTriggered(true);
+    pushActiveAnomaliesToHistory();
+  }, [pushActiveAnomaliesToHistory]);
 
-  // 重置异常（可选，用于演示后恢复）
+  // 重置异常
   const resetAnomaly = useCallback(() => {
     setIsAnomaly(false);
     setAnomalyTriggered(false);
+  }, []);
+
+  // 处理 alert / warning 后更新历史
+  const resolveAlert = useCallback((machineId, action) => {
+    setHistoricalAlerts((prev) =>
+      prev.map((item) =>
+        item.machineId === machineId && item.status === 'active'
+          ? {
+              ...item,
+              status: 'resolved',
+              actionTaken: action,
+              time: formatTime(),
+            }
+          : item
+      )
+    );
+
+    // 如果两个 active anomaly 都已经被处理，就退出 anomaly mode
+    setTimeout(() => {
+      setHistoricalAlerts((current) => {
+        const stillActive = current.some((item) => item.status === 'active');
+        if (!stillActive) {
+          setIsAnomaly(false);
+          setAnomalyTriggered(false);
+        }
+        return current;
+      });
+    }, 0);
   }, []);
 
   // 根据当前视图获取横幅状态
@@ -50,7 +149,6 @@ export default function useAnomalyMode() {
       };
     }
 
-    // 异常模式下，根据视图返回不同信息
     switch (currentView) {
       case 'overall':
         return {
@@ -73,7 +171,6 @@ export default function useAnomalyMode() {
           message: 'Line 3 Alert: Palletizing Robot Critical',
         };
       default:
-        // 如果是具体机器，根据机器返回
         if (currentView === AFFECTED_MACHINES.warning) {
           return {
             color: 'orange',
@@ -93,11 +190,11 @@ export default function useAnomalyMode() {
     }
   }, [isAnomaly]);
 
-  // 获取受影响机器的状态（用于覆盖原始数据）
+  // 获取受影响机器的状态
   const getMachineStatus = useCallback((machineId) => {
-    if (!isAnomaly) return null; // 返回 null 表示不覆盖
+    if (!isAnomaly) return null;
     if (machineId === AFFECTED_MACHINES.warning) return 'warning';
-    if (machineId === AFFECTED_MACHINES.alert) return 'emergency'; // alert 对应 emergency
+    if (machineId === AFFECTED_MACHINES.alert) return 'emergency';
     return null;
   }, [isAnomaly]);
 
@@ -107,15 +204,17 @@ export default function useAnomalyMode() {
     if (!override) return originalData;
     return { ...originalData, ...override };
   }, [isAnomaly]);
-  
+
   return {
     isAnomaly,
     anomalyTriggered,
     triggerAnomaly,
     resetAnomaly,
     getBannerInfo,
-    getMachineStatus, 
-    getMachineData,   
+    getMachineStatus,
+    getMachineData,
     affectedMachines: AFFECTED_MACHINES,
+    historicalAlerts,
+    resolveAlert,
   };
 }

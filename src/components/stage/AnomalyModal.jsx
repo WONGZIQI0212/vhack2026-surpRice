@@ -24,6 +24,7 @@ const Modal = styled.div`
   display: flex;
   flex-direction: column;
   animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+
   @keyframes slideUp {
     from { transform: translateY(50px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
@@ -51,7 +52,10 @@ const CloseBtn = styled.button`
   font-size: 1.2rem;
   cursor: pointer;
   padding: 4px;
-  &:hover { color: ${T.text}; }
+
+  &:hover {
+    color: ${T.text};
+  }
 `;
 
 const FilterBar = styled.div`
@@ -71,6 +75,7 @@ const FilterPill = styled.button`
   font-weight: 600;
   cursor: pointer;
   transition: 0.15s;
+
   &:hover {
     background: ${(p) => (p.$active ? T.accent : T.accentL)};
     border-color: ${T.accentM};
@@ -96,9 +101,11 @@ const SectionTitle = styled.div`
 
 const AlertCard = styled.div`
   background: ${(p) =>
-    p.$severity === 'alert' ? 'linear-gradient(135deg, #7f1d1d, #b91c1c)' :
-    p.$severity === 'warning' ? 'linear-gradient(135deg, #92400e, #b45309)' :
-    'transparent'};
+    p.$severity === 'alert'
+      ? 'linear-gradient(135deg, #7f1d1d, #b91c1c)'
+      : p.$severity === 'warning'
+      ? 'linear-gradient(135deg, #92400e, #b45309)'
+      : 'transparent'};
   color: ${(p) => (p.$severity ? 'white' : T.text)};
   border-radius: 14px;
   padding: 16px;
@@ -106,7 +113,7 @@ const AlertCard = styled.div`
   align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
-  border: ${(p) => p.$severity ? 'none' : `1px solid ${T.border}`};
+  border: ${(p) => (p.$severity ? 'none' : `1px solid ${T.border}`)};
 `;
 
 const AlertInfo = styled.div`
@@ -135,6 +142,7 @@ const ViewButton = styled.button`
   cursor: pointer;
   transition: 0.15s;
   white-space: nowrap;
+
   &:hover {
     background: ${(p) => (p.$primary ? T.accentM : 'rgba(255,255,255,0.2)')};
   }
@@ -147,6 +155,22 @@ const HistoricalItem = styled.div`
   color: ${T.muted};
   padding: 6px 0;
   border-bottom: 1px dashed ${T.border};
+  gap: 16px;
+
+  span:first-child {
+    flex: 1;
+    color: ${T.text};
+  }
+
+  span:last-child {
+    white-space: nowrap;
+  }
+`;
+
+const EmptyState = styled.div`
+  padding: 10px 0;
+  font-size: 0.78rem;
+  color: ${T.muted};
 `;
 
 const BackButton = styled.button`
@@ -178,10 +202,23 @@ const DetailView = ({ machineId, data, onBack, onAction }) => {
     <div>
       <BackButton onClick={onBack}>← Back to list</BackButton>
       <h3 style={{ marginBottom: '16px', fontSize: '1rem' }}>{machineId}</h3>
-      <div style={{ background: '#f3f4f6', padding: '16px', borderRadius: '12px', marginBottom: '16px' }}>
-        <p style={{ marginBottom: '8px' }}><strong>Reason:</strong> {data.reason}</p>
-        <p><strong>Data:</strong> {data.data}</p>
+
+      <div
+        style={{
+          background: '#f3f4f6',
+          padding: '16px',
+          borderRadius: '12px',
+          marginBottom: '16px',
+        }}
+      >
+        <p style={{ marginBottom: '8px' }}>
+          <strong>Reason:</strong> {data.reason}
+        </p>
+        <p>
+          <strong>Data:</strong> {data.data}
+        </p>
       </div>
+
       <div style={{ display: 'flex', gap: '12px', flexDirection: 'column' }}>
         {data.solutions.map((sol) => (
           <div key={sol.action}>
@@ -200,9 +237,13 @@ const DetailView = ({ machineId, data, onBack, onAction }) => {
                 opacity: actionTaken ? 0.7 : 1,
               }}
             >
-              {actionTaken === sol.action ? '✅ ' + (sol.action === 'maintenance' ? 'Maintenance Contacted' : 'Machine Stopped') : sol.label}
+              {actionTaken === sol.action
+                ? '✅ ' + (sol.action === 'maintenance' ? 'Maintenance Contacted' : 'Machine Stopped')
+                : sol.label}
             </button>
-            <p style={{ fontSize: '0.7rem', color: T.muted, marginTop: '4px' }}>{sol.consequence}</p>
+            <p style={{ fontSize: '0.7rem', color: T.muted, marginTop: '4px' }}>
+              {sol.consequence}
+            </p>
           </div>
         ))}
       </div>
@@ -230,6 +271,66 @@ const warningsData = [
   },
 ];
 
+// 假的历史 anomaly data
+const mockHistoricalAlerts = [
+  {
+    id: 'h1',
+    machineId: 'line3-palletize',
+    machine: 'Line 3 · Palletizing Robot',
+    issue: '🔴 Motor temperature spike',
+    time: '17 Mar 2026 · 03:14',
+  },
+  {
+    id: 'h2',
+    machineId: 'line2-conveyor',
+    machine: 'Line 2 · Conveyor Belt',
+    issue: '🟠 Abnormal vibration detected',
+    time: '17 Mar 2026 · 01:42',
+  },
+  {
+    id: 'h3',
+    machineId: 'line1-milling',
+    machine: 'Line 1 · Milling Machine',
+    issue: '🟡 Throughput drop detected',
+    time: '16 Mar 2026 · 18:21',
+  },
+  {
+    id: 'h4',
+    machineId: 'line3-husker',
+    machine: 'Line 3 · Husker',
+    issue: '🟠 Temperature above baseline',
+    time: '16 Mar 2026 · 14:06',
+  },
+  {
+    id: 'h5',
+    machineId: 'line2-palletize',
+    machine: 'Line 2 · Palletizing Robot',
+    issue: '🟡 Robot arm calibration drift',
+    time: '16 Mar 2026 · 11:32',
+  },
+  {
+    id: 'h6',
+    machineId: 'line1-conveyor',
+    machine: 'Line 1 · Conveyor',
+    issue: '🟠 Short vibration spike',
+    time: '15 Mar 2026 · 20:14',
+  },
+  {
+    id: 'h7',
+    machineId: 'line2-milling',
+    machine: 'Line 2 · Milling',
+    issue: '🟡 Unexpected RPM fluctuation',
+    time: '15 Mar 2026 · 16:55',
+  },
+  {
+    id: 'h8',
+    machineId: 'line3-conveyor',
+    machine: 'Line 3 · Conveyor',
+    issue: '🟠 Sensor noise detected',
+    time: '15 Mar 2026 · 13:07',
+  },
+];
+
 const getDetailData = (machineId) => {
   if (machineId === 'line3-palletize') {
     return {
@@ -249,6 +350,7 @@ const getDetailData = (machineId) => {
       ],
     };
   }
+
   if (machineId === 'line2-conveyor') {
     return {
       reason: 'Belt misalignment causing friction',
@@ -267,11 +369,19 @@ const getDetailData = (machineId) => {
       ],
     };
   }
+
   return null;
 };
 
-export default function AnomalyModal({ isOpen, onClose, filter, onFilterChange, onViewDetails, historicalAlerts,
-    onResolveAlert,  }) {
+export default function AnomalyModal({
+  isOpen,
+  onClose,
+  filter,
+  onFilterChange,
+  onViewDetails,
+  historicalAlerts = [],
+  onResolveAlert,
+}) {
   const [currentFilter, setCurrentFilter] = useState(filter || 'overall');
   const [view, setView] = useState('list');
   const [selectedMachine, setSelectedMachine] = useState(null);
@@ -299,7 +409,7 @@ export default function AnomalyModal({ isOpen, onClose, filter, onFilterChange, 
     handleBackToList();
   };
 
-  const filteredAlerts = alertsData.filter(a => {
+  const filteredAlerts = alertsData.filter((a) => {
     if (currentFilter === 'overall') return true;
     if (currentFilter === 'line1') return a.machineId.startsWith('line1');
     if (currentFilter === 'line2') return a.machineId.startsWith('line2');
@@ -307,11 +417,22 @@ export default function AnomalyModal({ isOpen, onClose, filter, onFilterChange, 
     return true;
   });
 
-  const filteredWarnings = warningsData.filter(w => {
+  const filteredWarnings = warningsData.filter((w) => {
     if (currentFilter === 'overall') return true;
     if (currentFilter === 'line1') return w.machineId.startsWith('line1');
     if (currentFilter === 'line2') return w.machineId.startsWith('line2');
     if (currentFilter === 'line3') return w.machineId.startsWith('line3');
+    return true;
+  });
+
+  const historySource =
+    historicalAlerts?.length > 0 ? historicalAlerts : mockHistoricalAlerts;
+
+  const filteredHistory = historySource.filter((item) => {
+    if (currentFilter === 'overall') return true;
+    if (currentFilter === 'line1') return item.machineId?.startsWith('line1');
+    if (currentFilter === 'line2') return item.machineId?.startsWith('line2');
+    if (currentFilter === 'line3') return item.machineId?.startsWith('line3');
     return true;
   });
 
@@ -347,7 +468,10 @@ export default function AnomalyModal({ isOpen, onClose, filter, onFilterChange, 
                         <AlertTitle>{item.title}</AlertTitle>
                         <AlertDesc>{item.description}</AlertDesc>
                       </AlertInfo>
-                      <ViewButton $primary onClick={() => handleViewDetails(item.machineId)}>
+                      <ViewButton
+                        $primary
+                        onClick={() => handleViewDetails(item.machineId)}
+                      >
                         View Details
                       </ViewButton>
                     </AlertCard>
@@ -373,13 +497,18 @@ export default function AnomalyModal({ isOpen, onClose, filter, onFilterChange, 
               )}
 
               <div>
-              <SectionTitle>📋 Historical Anomaly Detection</SectionTitle>
-    {historicalAlerts.map((item) => (
-      <HistoricalItem key={item.id}>
-        <span>{item.machine} – {item.issue}</span>
-        <span>{item.time}</span>
-      </HistoricalItem>
-    ))}
+                <SectionTitle>📋 Historical Anomaly Detection</SectionTitle>
+
+                {filteredHistory.length > 0 ? (
+                  filteredHistory.map((item) => (
+                    <HistoricalItem key={item.id}>
+                      <span>{item.machine} – {item.issue}</span>
+                      <span>{item.time}</span>
+                    </HistoricalItem>
+                  ))
+                ) : (
+                  <EmptyState>No historical anomaly record for this line.</EmptyState>
+                )}
               </div>
             </Content>
           </>
