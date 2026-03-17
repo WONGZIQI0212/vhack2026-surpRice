@@ -10,7 +10,8 @@ import Header from './Header';
 import StageArea from '../stage/StageArea';
 
 import Dashboard from '../../pages/Dashboard';
-import AIPrediction from '../../pages/AIPrediction';
+//import AIPrediction from '../../pages/AIPrediction';
+import AIModuleSwitcher from "../../pages/AIModuleSwitcher";
 import Maintenance from '../../pages/Maintenance';
 
 import AnomalyBanner from './AnomalyBanner';
@@ -316,10 +317,15 @@ export default function MainLayout() {
                   <Route
                     path="ai-prediction"
                     element={
-                      <AIPrediction
+/*                      <AIPrediction
                         mId={mId}
                         onNewMachineSelect={(id) => setShowNewMachine(!!id)}
                       />
+*/
+                      <AIModuleSwitcher
+  mId={mId}
+  onNewMachineSelect={(id) => setShowNewMachine(!!id)}
+/>
                     }
                   />
                   <Route path="maintenance" element={<Maintenance mId={mId} />} />
