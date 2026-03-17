@@ -1,42 +1,44 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import styled from 'styled-components';
-import { T, STATUS_CONFIG } from '../../styles/theme';
-import SceneSwitcher from '../layout/SceneSwitcher';
-import SmartSearchBar from './SmartSearchBar';
-import { StatusBadgeWrap, StatusDot } from './StatusBadge';
-import { MOCK_HEALTH_DATA } from '../../data/MockMachineData';
-import QuickDeployBar from './QuickDeployBar';
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import styled from "styled-components";
+import { T, STATUS_CONFIG } from "../../styles/theme";
+import SceneSwitcher from "../layout/SceneSwitcher";
+import SmartSearchBar from "./SmartSearchBar";
+import { StatusBadgeWrap, StatusDot } from "./StatusBadge";
+import { MOCK_HEALTH_DATA } from "../../data/MockMachineData";
+import QuickDeployBar from "./QuickDeployBar";
+import NavigatorTool from "./NavigatorTool";
+import AiChatBox from "./AiChatBox";
 
 const LINES = [
-  { id: 'overall', label: 'Overall' },
-  { id: 'line1', label: 'Line 1' },
-  { id: 'line2', label: 'Line 2' },
-  { id: 'line3', label: 'Line 3' },
+  { id: "overall", label: "Overall" },
+  { id: "line1", label: "Line 1" },
+  { id: "line2", label: "Line 2" },
+  { id: "line3", label: "Line 3" },
 ];
 
 const ZONE_NAMES = {
-  overall: 'All Zones',
-  line1: 'Production Line 1',
-  line2: 'Production Line 2',
-  line3: 'Production Line 3',
-  'line1-husker': 'Paddy Husker 01',
-  'line1-milling': 'Rice Milling Unit 01',
-  'line1-conveyor': 'Conveyor Belt 01',
-  'line1-palletize': 'Palletizing Robot 01',
-  'line2-husker': 'Paddy Husker 02',
-  'line2-milling': 'Rice Milling Unit 02',
-  'line2-conveyor': 'Conveyor Belt 02',
-  'line2-palletize': 'Palletizing Robot 02',
-  'line3-husker': 'Paddy Husker 03',
-  'line3-milling': 'Rice Milling Unit 03',
-  'line3-conveyor': 'Conveyor Belt 03',
-  'line3-palletize': 'Palletizing Robot 03',
+  overall: "All Zones",
+  line1: "Production Line 1",
+  line2: "Production Line 2",
+  line3: "Production Line 3",
+  "line1-husker": "Paddy Husker 01",
+  "line1-milling": "Rice Milling Unit 01",
+  "line1-conveyor": "Conveyor Belt 01",
+  "line1-palletize": "Palletizing Robot 01",
+  "line2-husker": "Paddy Husker 02",
+  "line2-milling": "Rice Milling Unit 02",
+  "line2-conveyor": "Conveyor Belt 02",
+  "line2-palletize": "Palletizing Robot 02",
+  "line3-husker": "Paddy Husker 03",
+  "line3-milling": "Rice Milling Unit 03",
+  "line3-conveyor": "Conveyor Belt 03",
+  "line3-palletize": "Palletizing Robot 03",
 };
 
 const CONTROL_HINTS = {
-  rotate: 'Drag to rotate the model view.',
-  move: 'Use Shift + drag or right-drag to move the camera view.',
-  zoom: 'Use mouse wheel or trackpad gesture to zoom in and out.',
+  rotate: "Drag to rotate the model view.",
+  move: "Use Shift + drag or right-drag to move the camera view.",
+  zoom: "Use mouse wheel or trackpad gesture to zoom in and out.",
 };
 
 const StageWrapper = styled.div`
@@ -143,24 +145,26 @@ const LinePill = styled.button`
   padding: 0 14px;
   border-radius: 999px;
   border: none;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: "Plus Jakarta Sans", sans-serif;
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   cursor: pointer;
-  transition: all 0.18s cubic-bezier(.34,1.56,.64,1);
+  transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
   white-space: nowrap;
   background: ${(p) =>
-    p.$active ? `linear-gradient(135deg, ${T.accent}, ${T.accentM})` : 'transparent'};
-  color: ${(p) => (p.$active ? '#fff' : T.muted)};
-  box-shadow: ${(p) => (p.$active ? '0 2px 8px rgba(55,102,240,0.3)' : 'none')};
+    p.$active
+      ? `linear-gradient(135deg, ${T.accent}, ${T.accentM})`
+      : "transparent"};
+  color: ${(p) => (p.$active ? "#fff" : T.muted)};
+  box-shadow: ${(p) => (p.$active ? "0 2px 8px rgba(55,102,240,0.3)" : "none")};
 
   &:hover {
-    color: ${(p) => (p.$active ? '#fff' : T.text)};
+    color: ${(p) => (p.$active ? "#fff" : T.text)};
     background: ${(p) =>
       p.$active
         ? `linear-gradient(135deg, ${T.accent}, ${T.accentM})`
-        : 'rgba(55,102,240,0.08)'};
+        : "rgba(55,102,240,0.08)"};
   }
 `;
 
@@ -189,94 +193,12 @@ const InlineStatus = styled.div`
   }
 `;
 
-const ToolbarWrap = styled.div`
-  position: absolute;
-  top: 64px;
-  right: 14px;
-  z-index: 40;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-`;
-
-const Toolbar = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 6px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.84);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.92);
-  box-shadow: 0 10px 26px rgba(13, 17, 23, 0.10);
-`;
-
-const ToolButton = styled.button`
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  border: 1px solid
-    ${(p) => (p.$active ? 'rgba(23,72,200,0.18)' : 'rgba(221,227,239,0.92)')};
-  background: ${(p) =>
-    p.$active
-      ? 'linear-gradient(135deg, rgba(23,72,200,0.10), rgba(55,102,240,0.14))'
-      : 'rgba(255,255,255,0.92)'};
-  color: ${(p) => (p.$active ? T.accent : T.muted)};
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.16s ease;
-  box-shadow: ${(p) => (p.$active ? '0 4px 12px rgba(23,72,200,0.12)' : 'none')};
-
-  &:hover {
-    color: ${T.text};
-    border-color: rgba(23,72,200,0.14);
-    transform: translateY(-1px);
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-    stroke: currentColor;
-  }
-`;
-
-const ToolTip = styled.div`
-  min-width: 180px;
-  max-width: 220px;
-  padding: 9px 11px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.92);
-  background: rgba(255, 255, 255, 0.86);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 10px 28px rgba(13, 17, 23, 0.10);
-`;
-
-const ToolTipTitle = styled.div`
-  font-size: 0.56rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: ${T.muted};
-  margin-bottom: 5px;
-`;
-
-const ToolTipText = styled.div`
-  font-size: 0.7rem;
-  line-height: 1.55;
-  color: ${T.sub};
-`;
-
 const ResetFlash = styled.div`
   position: absolute;
   inset: 0;
   z-index: 16;
   pointer-events: none;
-  background: ${(p) => (p.$show ? 'rgba(255,255,255,0.16)' : 'transparent')};
+  background: ${(p) => (p.$show ? "rgba(255,255,255,0.16)" : "transparent")};
   opacity: ${(p) => (p.$show ? 1 : 0)};
   transition: opacity 0.25s ease;
 `;
@@ -304,8 +226,8 @@ const AlertSymbol = styled.div`
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(220,38,38,0.12);
-  border: 1.5px solid rgba(220,38,38,0.7);
+  background: rgba(220, 38, 38, 0.12);
+  border: 1.5px solid rgba(220, 38, 38, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -323,48 +245,6 @@ const AlertIcon = styled.span`
   line-height: 1;
 `;
 
-function RotateIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 12a9 9 0 1 1-2.64-6.36" />
-      <path d="M21 3v6h-6" />
-    </svg>
-  );
-}
-
-function MoveIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2v20" />
-      <path d="M2 12h20" />
-      <path d="M8 6l4-4 4 4" />
-      <path d="M8 18l4 4 4-4" />
-      <path d="M6 8l-4 4 4 4" />
-      <path d="M18 8l4 4-4 4" />
-    </svg>
-  );
-}
-
-function ZoomIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="11" cy="11" r="6.5" />
-      <path d="M20 20l-4.2-4.2" />
-      <path d="M11 8.5v5" />
-      <path d="M8.5 11h5" />
-    </svg>
-  );
-}
-
-function ResetIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 12a9 9 0 1 0 3-6.7" />
-      <path d="M3 4v5h5" />
-    </svg>
-  );
-}
-
 export default function StageArea({
   stageH,
   mId,
@@ -374,15 +254,17 @@ export default function StageArea({
   getMachineData,
   showNewMachine,
 }) {
-  const activeLine = mId?.includes('-') ? mId.split('-')[0] : mId;
+  const activeLine = mId?.includes("-") ? mId.split("-")[0] : mId;
 
   const originalData = MOCK_HEALTH_DATA[mId] || MOCK_HEALTH_DATA.overall;
-  const healthData = getMachineData ? getMachineData(mId, originalData) : originalData;
+  const healthData = getMachineData
+    ? getMachineData(mId, originalData)
+    : originalData;
   const currentStatus = healthData.status;
 
   const showNavigator = true;
 
-  const [toolMode, setToolMode] = useState('rotate');
+  const [toolMode, setToolMode] = useState("rotate");
   const [showTip, setShowTip] = useState(false);
   const [sceneSessionKey, setSceneSessionKey] = useState(0);
   const [showResetFlash, setShowResetFlash] = useState(false);
@@ -396,13 +278,13 @@ export default function StageArea({
       return;
     }
 
-    const seen = localStorage.getItem('machine-nav-help-seen');
+    const seen = localStorage.getItem("machine-nav-help-seen");
     if (!seen) {
       setShowTip(true);
 
       const timer = window.setTimeout(() => {
         setShowTip(false);
-        localStorage.setItem('machine-nav-help-seen', '1');
+        localStorage.setItem("machine-nav-help-seen", "1");
       }, 3500);
 
       return () => window.clearTimeout(timer);
@@ -455,7 +337,11 @@ export default function StageArea({
             ))}
           </LineSwitcher>
 
-          <SmartSearchBar mId={mId} currentTab={currentTab} navigate={navigate} />
+          <SmartSearchBar
+            mId={mId}
+            currentTab={currentTab}
+            navigate={navigate}
+          />
 
           <InlineStatus $s={currentStatus} onClick={onStatusClick}>
             <StatusDot $s={currentStatus} />
@@ -463,79 +349,64 @@ export default function StageArea({
           </InlineStatus>
         </TopBar>
 
-        {/* AI Quick Deploy bar — only on Overall view, sits just below TopBar */}
-        <QuickDeployBar visible={mId === 'overall' && !showNewMachine} />
+        <QuickDeployBar visible={mId === "overall" && !showNewMachine} />
 
         {showNavigator && (
-          <ToolbarWrap>
-            <Toolbar>
-              <ToolButton
-                $active={toolMode === 'rotate'}
-                onClick={() => handleModeClick('rotate')}
-                title="Rotate"
-              >
-                <RotateIcon />
-              </ToolButton>
-
-              <ToolButton
-                $active={toolMode === 'move'}
-                onClick={() => handleModeClick('move')}
-                title="Move"
-              >
-                <MoveIcon />
-              </ToolButton>
-
-              <ToolButton
-                $active={toolMode === 'zoom'}
-                onClick={() => handleModeClick('zoom')}
-                title="Zoom"
-              >
-                <ZoomIcon />
-              </ToolButton>
-
-              <ToolButton onClick={handleResetView} title="Reset view">
-                <ResetIcon />
-              </ToolButton>
-            </Toolbar>
-
-            {showTip && (
-              <ToolTip>
-                <ToolTipTitle>{toolMode} mode</ToolTipTitle>
-                <ToolTipText>{tipText}</ToolTipText>
-              </ToolTip>
-            )}
-          </ToolbarWrap>
+          <NavigatorTool
+            toolMode={toolMode}
+            showTip={showTip}
+            tipText={tipText}
+            onModeClick={handleModeClick}
+            onResetView={handleResetView}
+          >
+            <AiChatBox
+              mId={mId}
+              healthData={healthData}
+              currentStatus={currentStatus}
+            />
+          </NavigatorTool>
         )}
 
         <SceneViewport key={sceneSessionKey}>
           <SceneSwitcher mId={mId} showNewMachine={showNewMachine} />
         </SceneViewport>
 
-        {mId?.includes('-') && !showNewMachine && (
-          <StatusBadgeWrap $s={currentStatus} style={{ top: '35%', right: '10%' }}>
-            <div style={{ color: T.muted, fontSize: '0.55rem', marginBottom: '4px' }}>
+        {mId?.includes("-") && !showNewMachine && (
+          <StatusBadgeWrap
+            $s={currentStatus}
+            style={{ top: "35%", right: "10%" }}
+          >
+            <div
+              style={{
+                color: T.muted,
+                fontSize: "0.55rem",
+                marginBottom: "4px",
+              }}
+            >
               LIVE TELEMETRY
             </div>
             <div
               style={{
-                fontSize: '0.8rem',
+                fontSize: "0.8rem",
                 fontWeight: 700,
-                color: parseFloat(healthData.temp) >= 65 ? '#dc2626' : T.text,
+                color: parseFloat(healthData.temp) >= 65 ? "#dc2626" : T.text,
               }}
             >
               {healthData.temp}
             </div>
-            <div style={{ fontSize: '0.6rem', color: T.sub }}>
+            <div style={{ fontSize: "0.6rem", color: T.sub }}>
               Speed: {healthData.speed}
             </div>
           </StatusBadgeWrap>
         )}
 
-        {mId?.includes('-') && parseFloat(healthData.temp) >= 65 && !showNewMachine && (
-          <AlertSymbol>
-            <AlertIcon>!</AlertIcon>
-          </AlertSymbol>
-        )}
+        {mId?.includes("-") &&
+          parseFloat(healthData.temp) >= 65 &&
+          !showNewMachine && (
+            <AlertSymbol>
+              <AlertIcon>!</AlertIcon>
+            </AlertSymbol>
+          )}
 
         <ResetFlash $show={showResetFlash} />
         <StageGradient />
