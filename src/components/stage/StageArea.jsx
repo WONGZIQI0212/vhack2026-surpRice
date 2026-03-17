@@ -5,6 +5,7 @@ import SceneSwitcher from '../layout/SceneSwitcher';
 import SmartSearchBar from './SmartSearchBar';
 import { StatusBadgeWrap, StatusDot } from './StatusBadge';
 import { MOCK_HEALTH_DATA } from '../../data/MockMachineData';
+import QuickDeployBar from './QuickDeployBar';
 
 const LINES = [
   { id: 'overall', label: 'Overall' },
@@ -461,6 +462,9 @@ export default function StageArea({
             {STATUS_CONFIG[currentStatus].label}
           </InlineStatus>
         </TopBar>
+
+        {/* AI Quick Deploy bar — only on Overall view, sits just below TopBar */}
+        <QuickDeployBar visible={mId === 'overall' && !showNewMachine} />
 
         {showNavigator && (
           <ToolbarWrap>
