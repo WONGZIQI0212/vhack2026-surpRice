@@ -15,9 +15,9 @@ const Overlay = styled.div`
 `;
 
 const Modal = styled.div`
-  width: 600px;
-  max-width: 90vw;
-  max-height: 80vh;
+  width: 680px;
+  max-width: 92vw;
+  max-height: 82vh;
   background: ${T.surface};
   border-radius: 24px;
   box-shadow: 0 24px 48px rgba(0,0,0,0.3);
@@ -87,7 +87,7 @@ const Content = styled.div`
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 `;
 
 const SectionTitle = styled.div`
@@ -128,7 +128,7 @@ const AlertTitle = styled.div`
 
 const AlertDesc = styled.div`
   font-size: 0.75rem;
-  opacity: 0.9;
+  opacity: 0.92;
 `;
 
 const ViewButton = styled.button`
@@ -153,7 +153,7 @@ const HistoricalItem = styled.div`
   justify-content: space-between;
   font-size: 0.75rem;
   color: ${T.muted};
-  padding: 6px 0;
+  padding: 8px 0;
   border-bottom: 1px dashed ${T.border};
   gap: 16px;
 
@@ -183,6 +183,152 @@ const BackButton = styled.button`
   display: flex;
   align-items: center;
   gap: 4px;
+`;
+
+/* AI Trend Analysis */
+const TrendCard = styled.div`
+  background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(16,185,129,0.08));
+  border: 1px solid rgba(59,130,246,0.16);
+  border-radius: 18px;
+  padding: 16px;
+`;
+
+const TrendHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+`;
+
+const TrendTitleWrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const TrendTitle = styled.div`
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: ${T.text};
+`;
+
+const TrendSubtitle = styled.div`
+  font-size: 0.75rem;
+  color: ${T.muted};
+  line-height: 1.45;
+`;
+
+const RiskBadge = styled.div`
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: ${(p) =>
+    p.$risk === 'High'
+      ? 'rgba(185,28,28,0.12)'
+      : p.$risk === 'Medium'
+      ? 'rgba(180,83,9,0.12)'
+      : 'rgba(5,150,105,0.12)'};
+  color: ${(p) =>
+    p.$risk === 'High'
+      ? '#b91c1c'
+      : p.$risk === 'Medium'
+      ? '#b45309'
+      : '#059669'};
+`;
+
+const TrendBody = styled.div`
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 16px;
+
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const SparkWrap = styled.div`
+  background: rgba(255,255,255,0.65);
+  border: 1px solid ${T.border};
+  border-radius: 14px;
+  padding: 12px;
+`;
+
+const SparkTitle = styled.div`
+  font-size: 0.72rem;
+  color: ${T.muted};
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+`;
+
+const SparkSvg = styled.svg`
+  width: 100%;
+  height: 88px;
+  display: block;
+`;
+
+const MetricGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+`;
+
+const MetricCard = styled.div`
+  background: rgba(255,255,255,0.72);
+  border: 1px solid ${T.border};
+  border-radius: 14px;
+  padding: 12px;
+`;
+
+const MetricLabel = styled.div`
+  font-size: 0.68rem;
+  color: ${T.muted};
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+  font-weight: 700;
+`;
+
+const MetricValue = styled.div`
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: ${T.text};
+`;
+
+const MetricHint = styled.div`
+  font-size: 0.72rem;
+  color: ${T.muted};
+  margin-top: 4px;
+  line-height: 1.35;
+`;
+
+const InsightBox = styled.div`
+  margin-top: 14px;
+  background: rgba(255,255,255,0.62);
+  border: 1px solid ${T.border};
+  border-radius: 14px;
+  padding: 12px 14px;
+`;
+
+const InsightLabel = styled.div`
+  font-size: 0.68rem;
+  color: ${T.muted};
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+`;
+
+const InsightText = styled.div`
+  font-size: 0.78rem;
+  color: ${T.text};
+  line-height: 1.55;
 `;
 
 // 详情视图组件
@@ -271,7 +417,6 @@ const warningsData = [
   },
 ];
 
-// 假的历史 anomaly data
 const mockHistoricalAlerts = [
   {
     id: 'h1',
@@ -331,7 +476,54 @@ const mockHistoricalAlerts = [
   },
 ];
 
-const getDetailData = (machineId) => {
+const trendAnalysisData = {
+  overall: {
+    title: 'Factory-wide anomaly trend increasing',
+    subtitle: 'AI compares recent abnormal patterns against the last 7-day baseline.',
+    risk: 'High',
+    prediction: '2 machines may require intervention within 24 hours',
+    rootCause: 'Recurring vibration instability and thermal overload pattern',
+    action: 'Prioritize Line 3 motor inspection, then Line 2 belt alignment check',
+    insight:
+      'AI detected a rising anomaly frequency driven mainly by Line 2 vibration irregularities and Line 3 temperature spikes. Pattern similarity suggests developing mechanical stress rather than isolated sensor noise.',
+    series: [22, 28, 26, 34, 41, 48, 57],
+  },
+  line1: {
+    title: 'Line 1 trend stable',
+    subtitle: 'Historical anomalies remain within normal operating deviation.',
+    risk: 'Low',
+    prediction: 'Low failure probability over the next 24 hours',
+    rootCause: 'No strong recurring anomaly signature detected',
+    action: 'Continue routine monitoring',
+    insight:
+      'AI found only minor isolated deviations on Line 1, with no repeating pattern severe enough to indicate emerging machine degradation.',
+    series: [8, 10, 9, 11, 10, 9, 10],
+  },
+  line2: {
+    title: 'Recurring vibration anomaly detected',
+    subtitle: 'AI identified repeated warning-level conveyor signatures over 7 days.',
+    risk: 'Medium',
+    prediction: 'Failure risk may rise within 12–24 hours if not inspected',
+    rootCause: 'Possible belt misalignment or bearing wear progression',
+    action: 'Schedule maintenance inspection on conveyor alignment',
+    insight:
+      'Trend analysis shows repeated vibration spikes on the conveyor subsystem with gradually increasing intensity. The pattern is consistent with progressive misalignment rather than a one-time operational fluctuation.',
+    series: [14, 17, 19, 23, 26, 29, 35],
+  },
+  line3: {
+    title: 'Escalating thermal anomaly pattern',
+    subtitle: 'AI detected critical temperature deviation on the palletizing robot motor.',
+    risk: 'High',
+    prediction: 'Critical failure risk elevated in the next 6–12 hours',
+    rootCause: 'Likely overload, poor cooling, or bearing wear',
+    action: 'Immediate inspection or emergency stop recommended',
+    insight:
+      'AI found a strong upward trend in thermal anomalies on Line 3. Historical matching suggests the current temperature behaviour resembles early-stage motor failure scenarios.',
+    series: [18, 21, 24, 31, 39, 52, 68],
+  },
+};
+
+function getDetailData(machineId) {
   if (machineId === 'line3-palletize') {
     return {
       reason: 'Bearing wear due to prolonged overload',
@@ -371,7 +563,122 @@ const getDetailData = (machineId) => {
   }
 
   return null;
-};
+}
+
+function getTrendData(currentFilter) {
+  return trendAnalysisData[currentFilter] || trendAnalysisData.overall;
+}
+
+function buildPolylinePoints(values, width = 260, height = 70, padding = 8) {
+  const max = Math.max(...values);
+  const min = Math.min(...values);
+  const range = max - min || 1;
+
+  return values
+    .map((value, index) => {
+      const x = padding + (index * (width - padding * 2)) / (values.length - 1);
+      const y = height - padding - ((value - min) / range) * (height - padding * 2);
+      return `${x},${y}`;
+    })
+    .join(' ');
+}
+
+function HistoricalTrendAnalysis({ currentFilter }) {
+  const data = getTrendData(currentFilter);
+  const points = buildPolylinePoints(data.series);
+  const latest = data.series[data.series.length - 1];
+  const previous = data.series[data.series.length - 2];
+  const delta = latest - previous;
+  const changeLabel = `${delta >= 0 ? '+' : ''}${delta} vs previous day`;
+
+  return (
+    <div>
+      <SectionTitle>🤖 Historical Trend Analysis</SectionTitle>
+
+      <TrendCard>
+        <TrendHeader>
+          <TrendTitleWrap>
+            <TrendTitle>{data.title}</TrendTitle>
+            <TrendSubtitle>{data.subtitle}</TrendSubtitle>
+          </TrendTitleWrap>
+          <RiskBadge $risk={data.risk}>{data.risk} Risk</RiskBadge>
+        </TrendHeader>
+
+        <TrendBody>
+          <SparkWrap>
+            <SparkTitle>7-Day Trend Signal</SparkTitle>
+            <SparkSvg viewBox="0 0 260 70" preserveAspectRatio="none">
+              <polyline
+                fill="none"
+                stroke="#cbd5e1"
+                strokeWidth="1"
+                points="8,62 252,62"
+              />
+              <polyline
+                fill="none"
+                stroke="#2563eb"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                points={points}
+              />
+              {data.series.map((value, index) => {
+                const max = Math.max(...data.series);
+                const min = Math.min(...data.series);
+                const range = max - min || 1;
+                const x = 8 + (index * (260 - 16)) / (data.series.length - 1);
+                const y = 70 - 8 - ((value - min) / range) * (70 - 16);
+
+                return (
+                  <circle
+                    key={`${value}-${index}`}
+                    cx={x}
+                    cy={y}
+                    r="3.5"
+                    fill="#2563eb"
+                  />
+                );
+              })}
+            </SparkSvg>
+          </SparkWrap>
+
+          <MetricGrid>
+            <MetricCard>
+              <MetricLabel>Predicted Risk</MetricLabel>
+              <MetricValue>{data.risk}</MetricValue>
+              <MetricHint>{data.prediction}</MetricHint>
+            </MetricCard>
+
+            <MetricCard>
+              <MetricLabel>Trend Shift</MetricLabel>
+              <MetricValue>{changeLabel}</MetricValue>
+              <MetricHint>Based on recent anomaly score movement</MetricHint>
+            </MetricCard>
+
+            <MetricCard>
+              <MetricLabel>Likely Root Cause</MetricLabel>
+              <MetricValue style={{ fontSize: '0.82rem', lineHeight: 1.35 }}>
+                {data.rootCause}
+              </MetricValue>
+            </MetricCard>
+
+            <MetricCard>
+              <MetricLabel>Recommended Action</MetricLabel>
+              <MetricValue style={{ fontSize: '0.82rem', lineHeight: 1.35 }}>
+                {data.action}
+              </MetricValue>
+            </MetricCard>
+          </MetricGrid>
+        </TrendBody>
+
+        <InsightBox>
+          <InsightLabel>AI Insight</InsightLabel>
+          <InsightText>{data.insight}</InsightText>
+        </InsightBox>
+      </TrendCard>
+    </div>
+  );
+}
 
 export default function AnomalyModal({
   isOpen,
@@ -495,6 +802,8 @@ export default function AnomalyModal({
                   ))}
                 </div>
               )}
+
+              <HistoricalTrendAnalysis currentFilter={currentFilter} />
 
               <div>
                 <SectionTitle>📋 Historical Anomaly Detection</SectionTitle>
