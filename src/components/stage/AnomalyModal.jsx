@@ -331,67 +331,189 @@ const InsightText = styled.div`
   line-height: 1.55;
 `;
 
-// 详情视图组件
-const DetailView = ({ machineId, data, onBack, onAction }) => {
+const DetailView = ({ machineId, onBack, onAction }) => {
   const [actionTaken, setActionTaken] = useState(null);
-
+  const data = getDetailData(machineId);
   if (!data) return null;
 
-  const handleAction = (action) => {
-    setActionTaken(action);
+  const handleAction = (actionType) => {
+    setActionTaken(actionType);
     setTimeout(() => {
-      onAction(action);
+      onAction(actionType);
     }, 1000);
   };
 
-  return (
-    <div>
-      <BackButton onClick={onBack}>← Back to list</BackButton>
-      <h3 style={{ marginBottom: '16px', fontSize: '1rem' }}>{machineId}</h3>
+  // 根据严重程度确定颜色
+  const severityColor = data.severity === 'critical' ? T.danger : T.warning;
+  const severityBg = data.severity === 'critical'
+    ? 'rgba(220,38,38,0.08)'
+    : 'rgba(217,119,6,0.08)';
 
-      <div
-        style={{
-          background: '#f3f4f6',
-          padding: '16px',
-          borderRadius: '12px',
-          marginBottom: '16px',
-        }}
-      >
-        <p style={{ marginBottom: '8px' }}>
-          <strong>Reason:</strong> {data.reason}
-        </p>
-        <p>
-          <strong>Data:</strong> {data.data}
-        </p>
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* 返回按钮 */}
+      <BackButton onClick={onBack}>← Back to list</BackButton>
+
+      {/* 头部：机器名称 + 状态徽章 */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0 }}>{data.machineName}</h3>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          background: severityBg,
+          border: `1px solid ${severityColor}30`,
+          borderRadius: '999px',
+          padding: '4px 10px',
+          fontSize: '0.7rem',
+          fontWeight: 700,
+          color: severityColor,
+        }}>
+          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: severityColor, animation: 'pulse 1.5s infinite' }} />
+          {data.severity === 'critical' ? 'CRITICAL ALERT' : 'WARNING'} · Z‑Score {data.zScore}
+        </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '12px', flexDirection: 'column' }}>
-        {data.solutions.map((sol) => (
-          <div key={sol.action}>
-            <button
-              onClick={() => handleAction(sol.action)}
-              disabled={actionTaken}
-              style={{
-                width: '100%',
-                padding: '12px',
-                background: sol.action === 'emergency' ? '#b91c1c' : T.accent,
-                color: 'white',
-                border: 'none',
-                borderRadius: '12px',
-                fontWeight: 600,
-                cursor: actionTaken ? 'default' : 'pointer',
-                opacity: actionTaken ? 0.7 : 1,
-              }}
-            >
-              {actionTaken === sol.action
-                ? '✅ ' + (sol.action === 'maintenance' ? 'Maintenance Contacted' : 'Machine Stopped')
-                : sol.label}
-            </button>
-            <p style={{ fontSize: '0.7rem', color: T.muted, marginTop: '4px' }}>
-              {sol.consequence}
-            </p>
+      {/* AI 诊断卡片 */}
+      <div style={{
+        background: 'rgba(23,72,200,0.04)',
+        border: '1px solid rgba(23,72,200,0.16)',
+        borderRadius: '14px',
+        padding: '16px',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
+          <span style={{ fontSize: '0.9rem' }}>🤖</span>
+          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: T.muted, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            AI Root Cause Analysis
+          </span>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+          <div>
+            <div style={{ fontSize: '0.6rem', color: T.muted, marginBottom: '2px' }}>Detected Anomaly</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: T.text }}>{data.aiAnalysis.detectedAnomaly}</div>
           </div>
-        ))}
+          <div>
+            <div style={{ fontSize: '0.6rem', color: T.muted, marginBottom: '2px' }}>Matched Pattern</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: T.text }}>{data.aiAnalysis.matchedPattern}</div>
+          </div>
+        </div>
+
+        <div style={{
+          background: severityBg,
+          borderRadius: '10px',
+          padding: '12px',
+          textAlign: 'center',
+        }}>
+          <div style={{ fontSize: '0.6rem', color: T.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            ⏳ Estimated Remaining Useful Life
+          </div>
+          <div style={{ fontSize: '1.4rem', fontWeight: 700, color: severityColor }}>
+            {data.aiAnalysis.rulEstimate}
+          </div>
+        </div>
+      </div>
+
+      {/* 实时数据对比网格 */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+        {['temperature', 'vibration'].map((key) => {
+          const metric = data.telemetry[key];
+          const isDanger = key === 'temperature'
+            ? metric.current > 65
+            : metric.current > 3;
+          const valueColor = isDanger ? T.danger : T.text;
+          return (
+            <div key={key} style={{
+              background: 'rgba(255,255,255,0.6)',
+              border: '1px solid rgba(221,227,239,0.8)',
+              borderRadius: '12px',
+              padding: '12px',
+            }}>
+              <div style={{ fontSize: '0.6rem', color: T.muted, textTransform: 'uppercase', marginBottom: '4px' }}>
+                {key === 'temperature' ? 'Temperature' : 'Vibration'}
+              </div>
+              <div style={{ fontSize: '1.2rem', fontWeight: 700, color: valueColor }}>
+                {metric.current}{metric.unit}
+                <span style={{ fontSize: '0.7rem', color: T.muted, fontWeight: 400, marginLeft: '6px' }}>
+                  (baseline {metric.baseline}{metric.unit})
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* 决策区 - 行动卡片 */}
+      <div style={{ display: 'flex', gap: '12px', flexDirection: 'column' }}>
+        {data.actions.map((action) => {
+          const isEmergency = action.type === 'emergency';
+          const cardBg = isEmergency
+            ? 'rgba(220,38,38,0.04)'
+            : 'rgba(5,150,105,0.04)';
+          const cardBorder = isEmergency
+            ? 'rgba(220,38,38,0.2)'
+            : 'rgba(5,150,105,0.2)';
+          const buttonBg = isEmergency
+            ? 'linear-gradient(135deg, #b91c1c, #dc2626)'
+            : `linear-gradient(135deg, ${T.accent}, ${T.accentM})`;
+
+          return (
+            <div key={action.type} style={{
+              background: cardBg,
+              border: `1px solid ${cardBorder}`,
+              borderRadius: '14px',
+              padding: '16px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: isEmergency ? T.danger : T.accent }}>
+                  {action.label}
+                </span>
+                <span style={{ fontSize: '0.7rem', color: T.muted }}>
+                  AI confidence <strong>{action.consequences.aiConfidence}%</strong>
+                </span>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+                <div>
+                  <div style={{ fontSize: '0.55rem', color: T.muted, textTransform: 'uppercase' }}>Yield Impact</div>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 600, color: isEmergency ? T.danger : T.text }}>
+                    {action.consequences.yieldImpact}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.55rem', color: T.muted, textTransform: 'uppercase' }}>Cost / Benefit</div>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 600, color: isEmergency ? T.danger : T.text }}>
+                    {action.consequences.cost}
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => handleAction(action.type)}
+                disabled={actionTaken}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  background: actionTaken === action.type
+                    ? (isEmergency ? '#b91c1c' : T.accent)
+                    : buttonBg,
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '10px',
+                  fontWeight: 600,
+                  fontSize: '0.7rem',
+                  cursor: actionTaken ? 'default' : 'pointer',
+                  opacity: actionTaken ? 0.6 : 1,
+                  transition: 'transform 0.1s, opacity 0.2s',
+                }}
+              >
+                {actionTaken === action.type
+                  ? '✅ ' + (action.type === 'maintenance' ? 'Maintenance Contacted' : 'Machine Stopped')
+                  : '▶ Execute'}
+              </button>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -526,18 +648,36 @@ const trendAnalysisData = {
 function getDetailData(machineId) {
   if (machineId === 'line3-palletize') {
     return {
-      reason: 'Bearing wear due to prolonged overload',
-      data: 'Temperature: 74°C, Vibration: 3.8 mm/s',
-      solutions: [
+      machineName: 'Palletizing Robot (Line 3)',
+      severity: 'critical',
+      zScore: 3.2,
+      aiAnalysis: {
+        detectedAnomaly: 'Temperature +18% above baseline',
+        matchedPattern: 'Bearing wear (confidence 92%)',
+        rulEstimate: '6–12 hours',
+      },
+      telemetry: {
+        temperature: { current: 74, baseline: 50, unit: '°C' },
+        vibration: { current: 3.8, baseline: 1.0, unit: 'mm/s' },
+      },
+      actions: [
         {
-          label: 'Contact Maintenance',
-          consequence: 'Yield decreases by 10%, maintenance cost RM 200',
-          action: 'maintenance',
+          label: '🔧 Dispatch Maintenance Team',
+          type: 'maintenance',
+          consequences: {
+            yieldImpact: '-10% (machine slows down)',
+            cost: 'RM 200',
+            aiConfidence: 89,
+          },
         },
         {
-          label: 'Emergency Stop Machine',
-          consequence: 'Complete halt of line, zero yield, prevents total motor failure',
-          action: 'emergency',
+          label: '⛔ Emergency Stop Machine',
+          type: 'emergency',
+          consequences: {
+            yieldImpact: 'Zero (line halts)',
+            cost: 'Prevents RM 15,000 motor failure',
+            aiConfidence: 97,
+          },
         },
       ],
     };
@@ -545,18 +685,36 @@ function getDetailData(machineId) {
 
   if (machineId === 'line2-conveyor') {
     return {
-      reason: 'Belt misalignment causing friction',
-      data: 'Temperature: 54°C, Vibration: 2.1 mm/s',
-      solutions: [
+      machineName: 'Conveyor Belt (Line 2)',
+      severity: 'warning',
+      zScore: 2.8,
+      aiAnalysis: {
+        detectedAnomaly: 'Repeated vibration spikes (2.1 mm/s)',
+        matchedPattern: 'Belt misalignment precursor (confidence 84%)',
+        rulEstimate: '24–36 hours',
+      },
+      telemetry: {
+        temperature: { current: 54, baseline: 45, unit: '°C' },
+        vibration: { current: 2.1, baseline: 1.2, unit: 'mm/s' },
+      },
+      actions: [
         {
-          label: 'Contact Maintenance',
-          consequence: 'Yield decreases by 5%, maintenance cost RM 150',
-          action: 'maintenance',
+          label: '🛠️ Contact Maintenance',
+          type: 'maintenance',
+          consequences: {
+            yieldImpact: '-5%',
+            cost: 'RM 150',
+            aiConfidence: 84,
+          },
         },
         {
-          label: 'Emergency Stop Machine',
-          consequence: 'Complete halt of line, zero yield, prevents belt damage',
-          action: 'emergency',
+          label: '⛔ Emergency Stop Machine',
+          type: 'emergency',
+          consequences: {
+            yieldImpact: 'Zero',
+            cost: 'Prevents belt damage',
+            aiConfidence: 92,
+          },
         },
       ],
     };
