@@ -20,7 +20,7 @@ const Tab = styled.button`
   padding: 10px;
   border-radius: 10px;
   border: 1px solid rgba(200,210,225,0.5);
-  background: ${p => p.active ? '#eef3ff' : '#fff'};
+  background: ${p => p.active ? '#1748C8' : '#ffffff'};
   font-weight: 700;
   cursor: pointer;
 `;
