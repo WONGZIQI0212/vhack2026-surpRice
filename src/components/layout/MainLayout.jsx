@@ -10,9 +10,9 @@ import Header from './Header';
 import StageArea from '../stage/StageArea';
 
 import Dashboard from '../../pages/Dashboard';
-//import AIPrediction from '../../pages/AIPrediction';
 import AIModuleSwitcher from "../../pages/AIModuleSwitcher";
 import Maintenance from '../../pages/Maintenance';
+import AIAdvisor from '../../pages/AIAdvisor';
 
 import AnomalyBanner from './AnomalyBanner';
 import AnomalyModal from '../stage/AnomalyModal';
@@ -302,6 +302,7 @@ export default function MainLayout() {
               <TabLink to={`/${mId}/dashboard`}>Dashboard</TabLink>
               <TabLink to={`/${mId}/ai-prediction`}>AI Prediction</TabLink>
               <TabLink to={`/${mId}/maintenance`}>Maintenance Schedule</TabLink>
+              <TabLink to={`/${mId}/ai-advisor`}>AI Advisor</TabLink>
             </TabBar>
 
             <AnomalyBanner
@@ -314,21 +315,9 @@ export default function MainLayout() {
               <PageScrollArea>
                 <Routes>
                   <Route path="dashboard" element={<Dashboard mId={mId} />} />
-                  <Route
-                    path="ai-prediction"
-                    element={
-/*                      <AIPrediction
-                        mId={mId}
-                        onNewMachineSelect={(id) => setShowNewMachine(!!id)}
-                      />
-*/
-                      <AIModuleSwitcher
-  mId={mId}
-  onNewMachineSelect={(id) => setShowNewMachine(!!id)}
-/>
-                    }
-                  />
+                  <Route path="ai-prediction" element={<AIModuleSwitcher mId={mId} onNewMachineSelect={(id) => setShowNewMachine(!!id)} /> } />
                   <Route path="maintenance" element={<Maintenance mId={mId} />} />
+                  <Route path="ai-advisor" element={<AIAdvisor mId={mId} />} />
                 </Routes>
               </PageScrollArea>
             </ContentArea>
