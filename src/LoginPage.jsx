@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import styled, { keyframes, css } from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import logoSrc from './assets/SurpRice_logo.svg';
 
 // ─── Animations ───────────────────────────────────────────────────────────────
@@ -14,11 +14,6 @@ const fadeIn = keyframes`
   to   { opacity: 1; }
 `;
 
-const shimmer = keyframes`
-  0%   { background-position: -400% center; }
-  100% { background-position:  400% center; }
-`;
-
 const rotateSlow = keyframes`
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
@@ -30,13 +25,18 @@ const pulseDot = keyframes`
 `;
 
 const scanLine = keyframes`
-  0%   { top: 0%; opacity: 0.6; }
+  0%   { top: 0%; opacity: 0.5; }
   100% { top: 100%; opacity: 0; }
 `;
 
 const traceMove = keyframes`
   0%   { background-position: -200% center; }
   100% { background-position:  200% center; }
+`;
+
+const float = keyframes`
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
 `;
 
 // ─── Root ─────────────────────────────────────────────────────────────────────
@@ -46,31 +46,30 @@ const Root = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #06080f;
+  background: #f1f5f9;
   position: relative;
   overflow: hidden;
   font-family: 'Plus Jakarta Sans', 'DM Sans', sans-serif;
 `;
 
-// Geometric background grid
+// Subtle dot-grid background
 const GridBg = styled.div`
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(rgba(23, 72, 200, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(23, 72, 200, 0.06) 1px, transparent 1px);
-  background-size: 52px 52px;
+  background-image: radial-gradient(circle, #cbd5e1 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.6;
   pointer-events: none;
   z-index: 0;
 `;
 
-// Radial glow behind card
+// Soft blue glow behind card
 const GlowOrb = styled.div`
   position: absolute;
   width: 700px;
   height: 700px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(23, 72, 200, 0.18) 0%, transparent 65%);
+  background: radial-gradient(circle, rgba(37,99,235,0.07) 0%, transparent 65%);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -78,26 +77,26 @@ const GlowOrb = styled.div`
   z-index: 0;
 `;
 
-// Second accent orb top-right
+// Accent green orb top-right
 const GlowOrbAccent = styled.div`
   position: absolute;
-  width: 400px;
-  height: 400px;
+  width: 380px;
+  height: 380px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(16, 180, 120, 0.12) 0%, transparent 65%);
+  background: radial-gradient(circle, rgba(16,185,129,0.06) 0%, transparent 65%);
   top: -80px;
   right: -60px;
   pointer-events: none;
   z-index: 0;
 `;
 
-// Decorative rotating ring
+// Decorative ring
 const RingDecor = styled.div`
   position: absolute;
   width: 520px;
   height: 520px;
   border-radius: 50%;
-  border: 1px solid rgba(23, 72, 200, 0.1);
+  border: 1px solid rgba(37,99,235,0.08);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -109,18 +108,18 @@ const RingDecor = styled.div`
     position: absolute;
     inset: 25px;
     border-radius: 50%;
-    border: 1px dashed rgba(23, 72, 200, 0.08);
+    border: 1px dashed rgba(37,99,235,0.06);
     animation: ${rotateSlow} 40s linear infinite;
   }
 `;
 
-// Scan line effect on bg
+// Scan line over background
 const ScanLineDecor = styled.div`
   position: absolute;
   left: 0; right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(23,72,200,0.18), transparent);
-  animation: ${scanLine} 6s ease-in-out infinite;
+  background: linear-gradient(90deg, transparent, rgba(37,99,235,0.1), transparent);
+  animation: ${scanLine} 7s ease-in-out infinite;
   pointer-events: none;
   z-index: 1;
 `;
@@ -130,39 +129,27 @@ const Card = styled.div`
   position: relative;
   z-index: 10;
   width: 420px;
-  background: rgba(12, 16, 28, 0.92);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 24px;
   padding: 40px 38px 36px;
   box-shadow:
-    0 0 0 1px rgba(23,72,200,0.15),
-    0 32px 80px rgba(0, 0, 0, 0.55),
-    0 2px 0 rgba(255,255,255,0.04) inset;
+    0 4px 6px rgba(0,0,0,.04),
+    0 20px 60px rgba(37,99,235,.08),
+    0 1px 0 rgba(255,255,255,.9) inset;
   overflow: hidden;
   animation: ${fadeSlideUp} 0.6s cubic-bezier(0.34, 1.4, 0.64, 1) both;
 `;
 
-// Animated top border trace
+// Animated top gradient bar
 const CardTopTrace = styled.div`
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 1.5px;
-  background: linear-gradient(90deg, transparent, #1748C8 30%, #10b47a 70%, transparent);
+  height: 3px;
+  background: linear-gradient(90deg, #2563eb, #10b981, #2563eb);
   background-size: 300% auto;
   animation: ${traceMove} 4s linear infinite;
-`;
-
-// Inner card scan
-const CardScan = styled.div`
-  position: absolute;
-  left: 0; right: 0;
-  height: 80px;
-  background: linear-gradient(to bottom, transparent, rgba(23,72,200,0.025), transparent);
-  pointer-events: none;
-  animation: ${scanLine} 5s ease-in-out infinite;
-  z-index: 0;
+  border-radius: 24px 24px 0 0;
 `;
 
 // Corner accent top-right
@@ -170,8 +157,8 @@ const CornerAccent = styled.div`
   position: absolute;
   top: 0; right: 0;
   width: 80px; height: 80px;
-  border-top: 1.5px solid rgba(23,72,200,0.3);
-  border-right: 1.5px solid rgba(23,72,200,0.3);
+  border-top: 1.5px solid rgba(37,99,235,.15);
+  border-right: 1.5px solid rgba(37,99,235,.15);
   border-radius: 0 24px 0 0;
   pointer-events: none;
 `;
@@ -180,8 +167,8 @@ const CornerAccentBL = styled.div`
   position: absolute;
   bottom: 0; left: 0;
   width: 60px; height: 60px;
-  border-bottom: 1.5px solid rgba(16,180,120,0.2);
-  border-left: 1.5px solid rgba(16,180,120,0.2);
+  border-bottom: 1.5px solid rgba(16,185,129,.15);
+  border-left: 1.5px solid rgba(16,185,129,.15);
   border-radius: 0 0 0 24px;
   pointer-events: none;
 `;
@@ -200,13 +187,14 @@ const LogoWrap = styled.div`
   width: 52px;
   height: 52px;
   border-radius: 14px;
-  background: linear-gradient(135deg, rgba(23,72,200,0.2), rgba(16,180,120,0.1));
-  border: 1px solid rgba(23,72,200,0.3);
+  background: linear-gradient(135deg, #dbeafe, #eff6ff);
+  border: 1px solid #bfdbfe;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 20px rgba(23,72,200,0.2);
+  box-shadow: 0 4px 14px rgba(37,99,235,.14);
   flex-shrink: 0;
+  animation: ${float} 4s ease-in-out infinite;
 `;
 
 const LogoImg = styled.img`
@@ -217,56 +205,52 @@ const LogoImg = styled.img`
 const TitleGroup = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
 `;
 
 const Title = styled.div`
   font-size: 1.85rem;
   font-weight: 800;
-  letter-spacing: -0.02em;
-  background: linear-gradient(135deg, #e8ecf4 30%, #8aaeff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  letter-spacing: -0.025em;
+  color: #0f172a;
   line-height: 1;
 `;
 
 const TitleSub = styled.div`
-  font-size: 0.55rem;
+  font-size: 0.52rem;
   font-weight: 700;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: #1748C8;
+  color: #2563eb;
 `;
 
 // ─── Divider ──────────────────────────────────────────────────────────────────
 const Divider = styled.div`
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
+  background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
   margin-bottom: 26px;
   animation: ${fadeIn} 0.5s 0.2s both;
 `;
 
-// ─── Labels + status ──────────────────────────────────────────────────────────
+// ─── System info ──────────────────────────────────────────────────────────────
 const SystemLabel = styled.div`
   text-align: center;
-  margin-bottom: 6px;
   animation: ${fadeSlideUp} 0.5s 0.1s cubic-bezier(0.34, 1.2, 0.64, 1) both;
 `;
 
 const SystemTitle = styled.div`
   font-size: 0.9rem;
   font-weight: 700;
-  color: #e8ecf4;
-  letter-spacing: 0.02em;
+  color: #0f172a;
+  letter-spacing: 0.01em;
   margin-bottom: 5px;
 `;
 
 const SystemSubtitle = styled.div`
-  font-size: 0.62rem;
-  color: rgba(180, 192, 220, 0.55);
-  letter-spacing: 0.04em;
-  line-height: 1.5;
+  font-size: 0.6rem;
+  color: #64748b;
+  letter-spacing: 0.03em;
+  line-height: 1.6;
   margin-bottom: 22px;
 `;
 
@@ -282,17 +266,17 @@ const StatusRow = styled.div`
 const StatusDot = styled.div`
   width: 6px; height: 6px;
   border-radius: 50%;
-  background: #10b47a;
-  box-shadow: 0 0 8px rgba(16,180,122,0.7);
+  background: #10b981;
+  box-shadow: 0 0 7px rgba(16,185,129,.55);
   animation: ${pulseDot} 2s ease infinite;
 `;
 
 const StatusText = styled.div`
-  font-size: 0.55rem;
+  font-size: 0.52rem;
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #10b47a;
+  color: #10b981;
 `;
 
 // ─── Form fields ──────────────────────────────────────────────────────────────
@@ -307,20 +291,28 @@ const FieldIcon = styled.div`
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 0.8rem;
-  opacity: 0.4;
+  font-size: 0.78rem;
+  opacity: 0.35;
   pointer-events: none;
+`;
+
+const FieldLabel = styled.div`
+  font-size: 0.48rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 5px;
+  padding-left: 2px;
 `;
 
 const StyledInput = styled.input`
   width: 100%;
-  padding: 13px 14px 13px 40px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid ${p => p.$focused
-    ? 'rgba(23,72,200,0.6)'
-    : 'rgba(255,255,255,0.08)'};
-  border-radius: 11px;
-  color: #e8ecf4;
+  padding: 12px 14px 12px 40px;
+  background: ${p => p.$focused ? '#ffffff' : '#f8fafc'};
+  border: 1.5px solid ${p => p.$focused ? '#2563eb' : '#e2e8f0'};
+  border-radius: 10px;
+  color: #0f172a;
   font-family: 'Plus Jakarta Sans', 'DM Sans', sans-serif;
   font-size: 0.78rem;
   font-weight: 500;
@@ -328,17 +320,17 @@ const StyledInput = styled.input`
   box-sizing: border-box;
   transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
   box-shadow: ${p => p.$focused
-    ? '0 0 0 3px rgba(23,72,200,0.12)'
-    : 'none'};
+    ? '0 0 0 3px rgba(37,99,235,.1)'
+    : '0 1px 2px rgba(0,0,0,.04)'};
 
   &::placeholder {
-    color: rgba(180,192,220,0.3);
-    font-size: 0.75rem;
+    color: #94a3b8;
+    font-size: 0.74rem;
   }
 
   &:-webkit-autofill {
-    -webkit-box-shadow: 0 0 0 100px rgba(12,16,28,0.95) inset;
-    -webkit-text-fill-color: #e8ecf4;
+    -webkit-box-shadow: 0 0 0 100px #f8fafc inset;
+    -webkit-text-fill-color: #0f172a;
   }
 `;
 
@@ -348,86 +340,80 @@ const LoginBtn = styled.button`
   padding: 13px;
   margin-top: 8px;
   border: none;
-  border-radius: 11px;
+  border-radius: 10px;
   background: ${p => p.$disabled
-    ? 'rgba(23,72,200,0.25)'
-    : 'linear-gradient(135deg, #1748C8, #3766f0)'};
-  background-size: 200% auto;
-  color: ${p => p.$disabled ? 'rgba(255,255,255,0.3)' : '#fff'};
+    ? '#e2e8f0'
+    : 'linear-gradient(135deg, #1d4ed8, #2563eb)'};
+  color: ${p => p.$disabled ? '#94a3b8' : '#ffffff'};
   font-family: 'Plus Jakarta Sans', 'DM Sans', sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   cursor: ${p => p.$disabled ? 'not-allowed' : 'pointer'};
-  box-shadow: ${p => p.$disabled ? 'none' : '0 6px 20px rgba(23,72,200,0.4)'};
-  transition: transform 0.15s, box-shadow 0.15s, background 0.2s;
+  box-shadow: ${p => p.$disabled ? 'none' : '0 4px 14px rgba(37,99,235,.3), inset 0 1px 0 rgba(255,255,255,.12)'};
+  transition: transform 0.15s, box-shadow 0.15s;
   position: relative;
   overflow: hidden;
   animation: ${fadeSlideUp} 0.5s 0.3s cubic-bezier(0.34, 1.2, 0.64, 1) both;
 
   &:hover:not([disabled]) {
     transform: translateY(-1px);
-    box-shadow: 0 10px 28px rgba(23,72,200,0.5);
+    box-shadow: 0 8px 22px rgba(37,99,235,.38);
   }
-
   &:active:not([disabled]) {
     transform: translateY(0);
   }
-
-  /* Shimmer sweep on hover */
   &::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent);
     transform: translateX(-100%);
     transition: transform 0.4s;
   }
-  &:hover::after {
-    transform: translateX(100%);
-  }
+  &:hover::after { transform: translateX(100%); }
 `;
 
 const GuestBtn = styled.button`
   width: 100%;
-  padding: 12px;
+  padding: 11px;
   margin-top: 10px;
   background: transparent;
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 11px;
-  color: rgba(180,192,220,0.6);
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  color: #64748b;
   font-family: 'Plus Jakarta Sans', 'DM Sans', sans-serif;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.07em;
   cursor: pointer;
   transition: border-color 0.2s, color 0.2s, background 0.2s;
   animation: ${fadeSlideUp} 0.5s 0.35s cubic-bezier(0.34, 1.2, 0.64, 1) both;
 
   &:hover {
-    border-color: rgba(23,72,200,0.45);
-    color: #8aaeff;
-    background: rgba(23,72,200,0.06);
+    border-color: #bfdbfe;
+    color: #2563eb;
+    background: #eff6ff;
   }
 `;
 
-// ─── Footer tag ───────────────────────────────────────────────────────────────
+// ─── Footer ───────────────────────────────────────────────────────────────────
 const FooterTag = styled.div`
   text-align: center;
   margin-top: 22px;
-  font-size: 0.52rem;
+  font-size: 0.5rem;
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.1);
+  color: #cbd5e1;
   animation: ${fadeIn} 0.5s 0.5s both;
 `;
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function LoginPage({ onLogin }) {
-  const [email,    setEmail]    = useState('');
-  const [password, setPassword] = useState('');
+  const [email,      setEmail]      = useState('');
+  const [password,   setPassword]   = useState('');
   const [focusField, setFocusField] = useState(null);
   const navigate = useNavigate();
 
@@ -453,7 +439,6 @@ export default function LoginPage({ onLogin }) {
 
       <Card>
         <CardTopTrace />
-        <CardScan />
         <CornerAccent />
         <CornerAccentBL />
 
@@ -484,10 +469,11 @@ export default function LoginPage({ onLogin }) {
 
         {/* Email */}
         <FieldWrap $delay={0.18}>
+          <FieldLabel>Email address</FieldLabel>
           <FieldIcon>✉</FieldIcon>
           <StyledInput
             type="email"
-            placeholder="Email address"
+            placeholder="you@company.com"
             value={email}
             $focused={focusField === 'email'}
             onFocus={() => setFocusField('email')}
@@ -499,10 +485,11 @@ export default function LoginPage({ onLogin }) {
 
         {/* Password */}
         <FieldWrap $delay={0.23}>
+          <FieldLabel>Password</FieldLabel>
           <FieldIcon>🔒</FieldIcon>
           <StyledInput
             type="password"
-            placeholder="Password"
+            placeholder="••••••••"
             value={password}
             $focused={focusField === 'password'}
             onFocus={() => setFocusField('password')}
@@ -517,10 +504,12 @@ export default function LoginPage({ onLogin }) {
           $disabled={!canSubmit}
           disabled={!canSubmit}
         >
-          Enter System
+          ▶ Enter System
         </LoginBtn>
 
-        <GuestBtn onClick={() => { onLogin({ email: 'guest' }); navigate('/overall/dashboard'); }}>
+        <GuestBtn
+          onClick={() => { onLogin({ email: 'guest' }); navigate('/overall/dashboard'); }}
+        >
           Continue as Guest
         </GuestBtn>
 
