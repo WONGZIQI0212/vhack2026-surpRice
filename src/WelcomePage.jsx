@@ -1,6 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
+import Spline from '@splinetool/react-spline';
+import { SCENES } from './styles/theme';
+
+// ─── Error boundary — prevents Spline crash from killing the whole page ───────
+class SplineErrorBoundary extends React.Component {
+  state = { error: false };
+  static getDerivedStateFromError() { return { error: true }; }
+  render() {
+    if (this.state.error) return this.props.fallback || null;
+    return this.props.children;
+  }
+}
 
 // ─── Keyframes ─────────────────────────────────────────────────────────────────
 const fadeUp   = keyframes`from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}`;
@@ -8,8 +20,6 @@ const fadeIn   = keyframes`from{opacity:0}to{opacity:1}`;
 const scanDown = keyframes`0%{top:-4%;opacity:.6}100%{top:105%;opacity:0}`;
 const pulseG   = keyframes`0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.4)}50%{box-shadow:0 0 0 6px rgba(16,185,129,0)}`;
 const pulseA   = keyframes`0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.4)}50%{box-shadow:0 0 0 6px rgba(245,158,11,0)}`;
-const rotFwd   = keyframes`from{transform:rotate(0)}to{transform:rotate(360deg)}`;
-const rotRev   = keyframes`from{transform:rotate(0)}to{transform:rotate(-360deg)}`;
 const ticker   = keyframes`0%{transform:translateX(0)}100%{transform:translateX(-50%)}`;
 const logScrl  = keyframes`0%{transform:translateY(0)}100%{transform:translateY(-50%)}`;
 const barIn    = keyframes`from{width:0}to{width:var(--w)}`;
@@ -18,6 +28,7 @@ const traceM   = keyframes`0%{background-position:-200% center}100%{background-p
 const bootType = keyframes`from{width:0}to{width:100%}`;
 const slideR   = keyframes`from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}`;
 const shimmer  = keyframes`0%,96%,100%{opacity:1}97.5%{opacity:.3}`;
+const spinKf   = keyframes`to{transform:rotate(360deg)}`;
 
 // ─── Palette tokens ───────────────────────────────────────────────────────────
 // bg:       #f8fafc  (near-white page)
@@ -141,20 +152,20 @@ const MidRow = styled.div`
   min-height: 0;
 `;
 
-// Map panel
-const MapPanel  = styled.div`flex:1;min-width:0;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;position:relative;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.05);animation:${fadeUp} .5s .3s cubic-bezier(.34,1.4,.64,1) both;`;
-const MapTopLn  = styled.div`position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#2563eb,#10b981);border-radius:12px 12px 0 0;`;
-const MapScanLn = styled.div`position:absolute;left:0;right:0;height:50px;background:linear-gradient(to bottom,transparent,rgba(37,99,235,.025),transparent);pointer-events:none;animation:${scanDown} 5s ease-in-out infinite;z-index:2;`;
-const MapHeader = styled.div`position:absolute;top:0;left:0;right:0;padding:9px 11px 0;display:flex;align-items:center;justify-content:space-between;z-index:5;`;
-const MapTitle  = styled.div`font-size:.43rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#2563eb;display:flex;align-items:center;gap:5px;&::before{content:'';width:3px;height:9px;background:linear-gradient(180deg,#2563eb,#93c5fd);border-radius:2px}`;
-const MapLiveTag= styled.div`display:flex;align-items:center;gap:4px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:.38rem;color:#64748b;letter-spacing:.1em;`;
-const MapSvg    = styled.svg`width:100%;height:100%;position:absolute;inset:0;`;
-const HudCorner = styled.div`position:absolute;width:12px;height:12px;pointer-events:none;z-index:4;${p=>p.$tl&&'top:6px;left:6px;border-top:1.5px solid #cbd5e1;border-left:1.5px solid #cbd5e1;'}${p=>p.$tr&&'top:6px;right:6px;border-top:1.5px solid #cbd5e1;border-right:1.5px solid #cbd5e1;'}${p=>p.$bl&&'bottom:6px;left:6px;border-bottom:1.5px solid #e2e8f0;border-left:1.5px solid #e2e8f0;'}${p=>p.$br&&'bottom:6px;right:6px;border-bottom:1.5px solid #e2e8f0;border-right:1.5px solid #e2e8f0;'}`;
-const RingWrap  = styled.div`position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:3px;pointer-events:none;z-index:3;`;
-const Ring      = styled.div`width:44px;height:44px;border-radius:50%;border:1px solid #bfdbfe;position:relative;animation:${rotFwd} 22s linear infinite;&::before{content:'';position:absolute;inset:6px;border-radius:50%;border:1px dashed #ddd6fe;animation:${rotRev} 13s linear infinite}&::after{content:'';position:absolute;top:-2px;left:50%;width:4px;height:4px;border-radius:50%;background:#2563eb;box-shadow:0 0 6px rgba(37,99,235,.5);transform:translateX(-50%)}`;
-const RingLabel = styled.div`font-family:'JetBrains Mono','Fira Code',monospace;font-size:.32rem;letter-spacing:.16em;text-transform:uppercase;color:#94a3b8;text-align:center;`;
-const LineBadgeRow= styled.div`position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:5;pointer-events:none;`;
-const LineBadge = styled.div`font-family:'JetBrains Mono','Fira Code',monospace;font-size:.37rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#2563eb;background:#eff6ff;border:1px solid #bfdbfe;border-radius:4px;padding:2px 6px;`;
+// Map panel — Spline 3D
+const MapPanel    = styled.div`flex:1;min-width:0;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;position:relative;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.05);animation:${fadeUp} .5s .3s cubic-bezier(.34,1.4,.64,1) both;`;
+const MapTopLn    = styled.div`position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#2563eb,#10b981);border-radius:12px 12px 0 0;z-index:6;`;
+const MapHeader   = styled.div`position:absolute;top:0;left:0;right:0;padding:9px 11px 0;display:flex;align-items:center;justify-content:space-between;z-index:6;background:linear-gradient(to bottom,rgba(248,250,252,.95) 60%,transparent);`;
+const MapTitle    = styled.div`font-size:.43rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#2563eb;display:flex;align-items:center;gap:5px;&::before{content:'';width:3px;height:9px;background:linear-gradient(180deg,#2563eb,#93c5fd);border-radius:2px}`;
+const MapLiveTag  = styled.div`display:flex;align-items:center;gap:4px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:.38rem;color:#64748b;letter-spacing:.1em;`;
+const SplineWrap  = styled.div`position:absolute;inset:0;z-index:1;`;
+const MapFooter   = styled.div`position:absolute;bottom:0;left:0;right:0;padding:0 10px 8px;display:flex;justify-content:center;gap:5px;z-index:6;background:linear-gradient(to top,rgba(248,250,252,.9) 50%,transparent);`;
+const LineBadge   = styled.div`font-family:'JetBrains Mono','Fira Code',monospace;font-size:.37rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#2563eb;background:#eff6ff;border:1px solid #bfdbfe;border-radius:4px;padding:2px 6px;`;
+const SplineLoader= styled.div`position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;background:#f8fafc;transition:opacity .4s;opacity:${p=>p.$hide?0:1};pointer-events:${p=>p.$hide?'none':'auto'};`;
+const SpinnerRing = styled.div`width:26px;height:26px;border-radius:50%;border:2px solid #e2e8f0;border-top-color:#2563eb;animation:${spinKf} .75s linear infinite;`;
+const SplineFallback = styled.div`position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:#f8fafc;`;
+const SplineFallbackIcon = styled.div`font-size:2rem;opacity:.3;`;
+const SplineFallbackText = styled.div`font-family:'JetBrains Mono','Fira Code',monospace;font-size:.42rem;color:#94a3b8;letter-spacing:.1em;`;
 
 // Shared panel
 const Panel     = styled.div`flex:1;min-width:0;min-height:0;background:#ffffff;border:1px solid ${p=>p.$warn?'#fde68a':'#e2e8f0'};border-radius:12px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 1px 4px rgba(0,0,0,.05);animation:${slideR} .5s ${p=>p.$d||.4}s cubic-bezier(.34,1.4,.64,1) both;`;
@@ -196,58 +207,12 @@ const ModuleFoot= styled.div`display:flex;align-items:center;justify-content:spa
 const ModuleStat= styled.div`font-family:'JetBrains Mono','Fira Code',monospace;font-size:.41rem;font-weight:700;color:${p=>p.$c};background:${p=>p.$bg};border:1px solid ${p=>p.$border};border-radius:4px;padding:1px 6px;`;
 const ModuleArrow=styled.div`font-size:.56rem;color:#94a3b8;transition:transform .2s,color .2s;${ModuleCard}:hover &{transform:translateX(3px);color:#2563eb}`;
 
-// ─── Factory map SVG ──────────────────────────────────────────────────────────
-const MAP_NODES = [
-  {id:'L1H',x:12,y:16,l:'L1-HSK'},{id:'L1M',x:30,y:12,l:'L1-MIL'},
-  {id:'L1C',x:50,y:16,l:'L1-CNV'},{id:'L1P',x:70,y:12,l:'L1-PAL'},
-  {id:'L2H',x:12,y:42,l:'L2-HSK'},{id:'L2M',x:30,y:38,l:'L2-MIL'},
-  {id:'L2C',x:50,y:42,l:'L2-CNV'},{id:'L2P',x:70,y:38,l:'L2-PAL'},
-  {id:'L3H',x:12,y:68,l:'L3-HSK'},{id:'L3M',x:30,y:64,l:'L3-MIL'},
-  {id:'L3C',x:50,y:68,l:'L3-CNV'},{id:'L3P',x:70,y:64,l:'L3-PAL'},
-  {id:'HUB',x:88,y:42,l:'CTRL'},
-];
-const MAP_EDGES = [
-  ['L1H','L1M'],['L1M','L1C'],['L1C','L1P'],['L1P','HUB'],
-  ['L2H','L2M'],['L2M','L2C'],['L2C','L2P'],['L2P','HUB'],
-  ['L3H','L3M'],['L3M','L3C'],['L3C','L3P'],['L3P','HUB'],
-];
-
-function FactoryMap() {
-  const nm = Object.fromEntries(MAP_NODES.map(n=>[n.id,n]));
-  return (
-    <MapSvg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
-      <defs>
-        <filter id="wgn"><feGaussianBlur stdDeviation=".4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-        <filter id="wgh"><feGaussianBlur stdDeviation=".9" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-      </defs>
-      {[{t:'LINE 1',y:6},{t:'LINE 2',y:32},{t:'LINE 3',y:58}].map(({t,y})=>(
-        <text key={t} x="1" y={y} fontSize="1.8" fill="rgba(148,163,184,.5)" fontFamily="monospace">{t}</text>
-      ))}
-      {MAP_EDGES.map(([a,b])=>{
-        const na=nm[a],nb=nm[b];
-        return <line key={`${a}-${b}`} x1={na.x} y1={na.y} x2={nb.x} y2={nb.y}
-          stroke={b==='HUB'?'rgba(16,185,129,.35)':'rgba(37,99,235,.25)'} strokeWidth=".3" strokeDasharray=".8,1.2"/>;
-      })}
-      {MAP_NODES.map(n=>{
-        const isHub=n.id==='HUB', c=isHub?'#10b981':'#2563eb';
-        const bg=isHub?'rgba(16,185,129,.12)':'rgba(37,99,235,.08)';
-        return (
-          <g key={n.id} filter={isHub?'url(#wgh)':'url(#wgn)'}>
-            <circle cx={n.x} cy={n.y} r="2.8" fill={bg} stroke={c} strokeWidth=".3"/>
-            <circle cx={n.x} cy={n.y} r="1" fill={c}/>
-            <text x={n.x} y={n.y-3} textAnchor="middle" fontSize="1.6" fill="rgba(100,116,139,.6)" fontFamily="monospace">{n.l}</text>
-          </g>
-        );
-      })}
-    </MapSvg>
-  );
-}
-
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function WelcomePage({ user, onLogout }) {
   const navigate = useNavigate();
-  const [bootDone, setBootDone] = useState(false);
-  const [bootPct,  setBootPct]  = useState(0);
+  const [bootDone,     setBootDone]     = useState(false);
+  const [bootPct,      setBootPct]      = useState(0);
+  const [splineLoaded, setSplineLoaded] = useState(false);
 
   useEffect(()=>{
     const steps=[10,30,55,72,90,100], timings=[300,700,1100,1500,1900,2300];
@@ -380,24 +345,42 @@ export default function WelcomePage({ user, onLogout }) {
         {/* Row 2 — Map | AI Advisor | Event Log */}
         <MidRow>
 
+          {/* Live Factory Digital Twin — Spline 3D */}
           <MapPanel>
-            <MapTopLn/><MapScanLn/>
-            <HudCorner $tl/><HudCorner $tr/><HudCorner $bl/><HudCorner $br/>
+            <MapTopLn/>
             <MapHeader>
               <MapTitle>Live Factory Digital Twin</MapTitle>
               <MapLiveTag><SmallDot/>12 Machines · 3 Lines</MapLiveTag>
             </MapHeader>
-            <FactoryMap/>
-            <RingWrap>
-              <RingLabel>Ctrl Hub</RingLabel>
-              <Ring/>
-              <RingLabel style={{marginTop:3}}>Output {D.speed}</RingLabel>
-            </RingWrap>
-            <LineBadgeRow>
+
+            {/* Spline 3D scene */}
+            <SplineWrap>
+              <SplineErrorBoundary fallback={
+                <SplineFallback>
+                  <SplineFallbackIcon>🏭</SplineFallbackIcon>
+                  <SplineFallbackText>3D scene unavailable</SplineFallbackText>
+                </SplineFallback>
+              }>
+                <Suspense fallback={null}>
+                  <Spline
+                    scene={SCENES.factory}
+                    onLoad={() => setSplineLoaded(true)}
+                  />
+                </Suspense>
+              </SplineErrorBoundary>
+            </SplineWrap>
+
+            {/* Loading state — fades out once Spline is ready */}
+            <SplineLoader $hide={splineLoaded}>
+              <SpinnerRing />
+            </SplineLoader>
+
+            {/* Line score badges pinned to bottom */}
+            <MapFooter>
               <LineBadge>L1 · {D.l1}</LineBadge>
               <LineBadge>L2 · {D.l2}</LineBadge>
               <LineBadge>L3 · {D.l3}</LineBadge>
-            </LineBadgeRow>
+            </MapFooter>
           </MapPanel>
 
           <Panel $warn $d={0.36}>
