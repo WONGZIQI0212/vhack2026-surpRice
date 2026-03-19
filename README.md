@@ -121,7 +121,8 @@ vhack2026-surpRice/
 ├── index.html
 ├── package.json
 └── README.md
-
+```
+---
 ## System Architecture 🪜
 
 ---
@@ -135,7 +136,7 @@ vhack2026-surpRice/
 ---
 
 ## Contributors 👩🏼‍💻
-- Team **JustBrightForUTM**
+- Team **TBC**
 
       🙋🏻‍♀️Bong Zi Shan
       🙆🏻‍♀️Loh Su Ting
