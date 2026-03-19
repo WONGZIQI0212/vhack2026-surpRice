@@ -98,3 +98,47 @@ git clone https://github.com/WONGZIQI0212/vhack2026-surpRice.git
 cd vhack2026-surpRice
 npm install
 npm run dev
+
+Project Structure ⛓
+vhack2026-surpRice/
+├── public/
+├── src/
+│   ├── assets/               # Logo, images
+│   ├── components/           # Reusable UI
+│   │   ├── dashboard/
+│   │   ├── layout/
+│   │   ├── stage/
+│   │   └── ui/
+│   ├── context/              # AnomalyContext
+│   ├── data/                 # Mock JSON data
+│   ├── hooks/                # useAnomalyMode, etc.
+│   ├── pages/                # Dashboard, AIAdvisor, Maintenance, ...
+│   ├── styles/               # Global styles, theme
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── index.css
+├── .gitignore
+├── index.html
+├── package.json
+└── README.md
+
+## System Architecture 🪜
+
+---
+
+## Documentation 📃
+- **User Guide:** https://github.com/jiahui-1101/CodeNection/blob/main/User%20Manual%20UTM%20Bright%20(1).pdf
+- **User Feedback:** https://forms.gle/ZK2iXbxEqRqoE2iJ6
+- **Demo / Walkthrough:** https://youtu.be/3rg5cUewwSQ
+- **Tech Stack:** Flutter :heavy_plus_sign: Firebase
+
+---
+
+## Contributors 👩🏼‍💻
+- Team **JustBrightForUTM**
+
+      🙋🏻‍♀️Bong Zi Shan
+      🙆🏻‍♀️Loh Su Ting
+      🧏🏻‍♀️Wong Jia Hui
+      💁🏻‍♀️Wong Zi Qi
+
