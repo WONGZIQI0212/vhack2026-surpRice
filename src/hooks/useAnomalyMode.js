@@ -144,8 +144,8 @@ export default function useAnomalyMode() {
   const getBannerInfo = useCallback((currentView) => {
     if (!isAnomaly) {
       return {
-        color: 'green',
-        message: 'All machines in good condition',
+        color: 'orange',
+        message: 'Factory health degraded — review recommended',
       };
     }
 
@@ -157,8 +157,8 @@ export default function useAnomalyMode() {
         };
       case 'line1':
         return {
-          color: 'green',
-          message: 'Line 1 in good condition',
+          color: 'orange',
+          message: '⚠ Line 1 health degraded — review recommended',
         };
       case 'line2':
         return {
@@ -184,8 +184,8 @@ export default function useAnomalyMode() {
           };
         }
         return {
-          color: 'green',
-          message: 'Machine in good condition',
+          color: 'orange',
+          message: '⚠ Machine health degraded — review recommended',
         };
     }
   }, [isAnomaly]);
