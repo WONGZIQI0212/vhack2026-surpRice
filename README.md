@@ -54,15 +54,19 @@ Turn operational data into strategic insight. Instantly see the trade‑offs bet
 Each scenario updates the 3D twin and KPIs in real time, letting managers explore “what if” without touching a single machine.
 
 ### 3. Intelligent Operations Advisory 🧠➕
+- **Predictive Detection** – Catch anomalies early before they escalate.
+- **Actionable Steps** – Tells you *what* to maintain and *when*.
+- **Cost & Downtime Savings** – Shift from reactive to **proactive** maintenance.
+- **Decision Intelligence** – Not just data; AI advises the best course of action.
+- *“Fix it before it fails.”*
+
+### 4. AI‑Powered Machine Impact Simulator 📈🤖
 - **Zero‑Risk Decision Testing** – Simulate the impact of adding a new machine before investing a single dollar.  
 - **Live 3D Preview** – The new machine appears instantly in the digital twin, so you see exactly how it fits into your layout.  
 - **Instant Feedback Sliders** – Adjust parameters and watch cost, capacity, and risk change in real time.  
 - *“Every decision is tested before it becomes a risk.”*
 
-### 4. AI‑Powered Machine Impact Simulator 📈🤖
-Go beyond simple RUL prediction. This simulator forecasts how a machine’s degradation will affect overall line throughput, energy consumption, and maintenance backlog. It answers the question: **“If this motor fails in two weeks, what does it cost my factory?”**
-
-### 5. Anomaly Diagnostics Engine 🚨🔍
+- ### 5. Anomaly Diagnostics Engine 🚨🔍
 - **Real‑Time Detection** – Continuously monitors sensor streams to spot deviations as they happen.
 - **Full Breakdown** – For every anomaly, the system tells you:
   - **When & Where** it started
@@ -78,17 +82,16 @@ Go beyond simple RUL prediction. This simulator forecasts how a machine’s degr
 
 ## Technical Stack :computer:
 - **Frontend**  
-  - React 18 + Vite  
-  - Styled‑Components  
-  - Recharts (dynamic charts)  
-  - React Router v6  
+  - React + Vite  
+  - JavaScript  
 - **3D Visualization**  
   - Spline (interactive digital twin)  
-- **State & Logic**  
-  - Custom React Hooks  
-  - Context API  
-- **Data Simulation**  
-  - Static JSON (for rapid prototyping & demo)
+- **Backend**  
+  - Node.js  
+  - Python  
+- **AI Processing**  
+  - Google Cloud  
+  - FastAPI  
 
 ---
 
@@ -124,7 +127,62 @@ vhack2026-surpRice/
 ```
 ---
 ## System Architecture 🪜
+flowchart LR
+    %% USER
+    User([👤 User]) -->|Commands & Requests| FrontendApp["Frontend (React App)"]
 
+    %% FRONTEND GROUP
+    subgraph F[Frontend Layer 🎛️]
+      FrontendApp -->|User Interaction| UI["UI Modules<br/>(3D View • Dashboard • AI Chat • Maintenance)"]
+      FrontendApp -->|Telemetry Stream| WebSocket[WebSocket Client]
+      FrontendApp -->|Local Processing| LocalCalc[Local KPI Engine]
+      FrontendApp -->|UI Updates & Feedback| ChartsComp[Charts / Visualization]
+    end
+
+    %% BACKEND GROUP
+    subgraph B[Backend Layer ⚙️]
+      API[REST API / WebSocket Gateway]
+      DB[(PostgreSQL / Redis / InfluxDB)]
+      AIService[AI Adapter / Model Interface]
+      MQTTBroker[(MQTT Broker)]
+    end
+
+    %% MACHINES GROUP
+    subgraph M[Machines Layer 🏭]
+      Machine1[IoT Machine A]
+      Machine2[IoT Machine B]
+    end
+
+    %% EXTERNAL SERVICES
+    subgraph X[External Services 🌐]
+      CloudAI[Cloud AI API]
+      Analytics[Logging / Monitoring Service]
+    end
+
+    %% CONNECTIONS BETWEEN LAYERS
+    
+    UI -->|API Calls / Requests| API
+    WebSocket -->|Telemetry Updates| API
+    LocalCalc -->|Compute KPIs| ChartsComp
+    ChartsComp -->|Graphs / Metrics| FrontendApp
+
+    API -->|Read/Write Data| DB
+    API -->|Forward AI Query| AIService
+    API -->|Publish / Subscribe| MQTTBroker
+    API -->|Log Events| Analytics
+
+    AIService -->|Prompt → Response| CloudAI
+
+    MQTTBroker -->|Send Commands| Machine1
+    MQTTBroker -->|Send Commands| Machine2
+    Machine1 -->|Telemetry Data| MQTTBroker
+    Machine2 -->|Telemetry Data| MQTTBroker
+
+    MQTTBroker -->|Processed Data| API
+    DB -->|Telemetry Storage| API
+    API -->|WebSocket Stream| WebSocket
+    API -->|Responses & Data| FrontendApp
+    AIService -->|AI Recommendations| API
 ---
 
 ## Documentation 📃
