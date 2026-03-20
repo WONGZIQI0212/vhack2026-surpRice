@@ -3,23 +3,81 @@
   <img src="https://github.com/WONGZIQI0212/vhack2026-surpRice/blob/main/src/assets/SurpRice_logo.svg" width="200" hspace="20">
 </p>
 
-## 📖 Table of Contents
-- [Track & Problem Statement](#track--problem-statement-mag_right)
-- [Introduction](#introduction-mega)
-- [Core Features](#core-features-star2)
-- [Technical Stack](#technical-stack-computer)
+## Table of Contents
+- [Case Study & Problem Statement](#case-study--problem-statement-)
+- [Problem Statement](#-problem-statement-)
+- [Introduction](#introduction-)
+- [Core Features](#core-features-)
+- [Technical Stack](#technical-stack-)
 - [Installation](#installation-)
-- [Project Structure](#project-structure-)
+- [Project Structure](#project-structure)
 - [System Architecture](#system-architecture-)
+- [Demo Video](#demo-video-)
+- [Documentation](#documentation-)
+- [Future Improvements & Expansion](#-future-improvements--expansion)
 - [Contributors](#contributors-)
-
 ---
 
 ## Case Study & Problem Statement :mag_right:
 **Case Study:** Varsity Hackathon 2026 — Case Study 1: Predictive Maintenance for SME Resilience (SDG 9)
 
-**Problem Statement:**
-ASEAN SMEs, the backbone of the economy, operate with aging machinery and thin profit margins. Reactive maintenance (fixing after failure) and inefficient preventative maintenance (replacing parts too early) lead to costly downtime. There is an urgent need for an AI-driven system that can predict machine health, visualize issues spatially, and help managers make data‑driven operational decisions—without requiring a “smart factory” overhaul.
+---
+
+# 📌 Problem Statement 🔍
+
+## Background
+
+Across ASEAN, SMEs form the backbone of the economy, especially in manufacturing sectors. However, many factories still rely on **reactive or time-based maintenance**, leading to inefficiencies and unexpected disruptions.
+
+---
+
+## Key Challenges
+
+### ⚠️ 1. High Cost of Downtime
+
+Unplanned machine failures can lead to:
+
+* Significant revenue loss
+* Reduced productivity
+* Expensive recovery and repair costs
+
+In manufacturing, downtime can cost **up to hundreds of millions annually**, making it a critical business risk.
+
+---
+
+### 📉 2. Limited Resources in SMEs
+
+* SMEs operate with **tight budgets and manpower constraints**
+* Lack of access to advanced monitoring and analytics tools
+* Difficulty in making data-driven operational decisions
+
+---
+
+### 📊 3. Data Without Intelligence
+
+* Factories already collect sensor data (temperature, vibration, load)
+* However, this data is often:
+
+  * Fragmented
+  * Underutilized
+  * Not translated into actionable insights
+
+---
+
+### ⏱️ 4. Reactive Maintenance Approach
+
+* Problems are only detected **after failure occurs**
+* Preventive maintenance may replace components too early
+* Leads to unnecessary cost and downtime
+
+---
+
+## 🎯 Problem Summary
+
+SMEs lack an intelligent system that can **predict machine failures early, visualize factory operations clearly, and support proactive decision-making.**
+
+---
+
 
 ---
 
@@ -139,6 +197,62 @@ vhack2026-surpRice/
 ![SurpRice System Architecture](https://github.com/WONGZIQI0212/vhack2026-surpRice/raw/main/src/assets/SystemArchitecture.png)
 
 ---
+# Demo Video 🎥
+
+Watch the demo here:
+
+🔗 **YouTube Demo**
+[(Link)](https://youtu.be/)
+
+---
+
+# Documentation 📄
+
+📊 **Presentation Slides**
+[(Slide Link)](https://www.canva.com/)
+
+---
+# 🚀 Future Improvements & Expansion
+
+## 🔧 1. Advanced AI & Backend Integration
+
+* Implement full backend architecture (Node.js + FastAPI)
+* Train **enhanced Remaining Useful Life (RUL) models**
+
+  * Use public datasets (e.g., NASA CMAPSS)
+  * Incorporate real factory data for higher accuracy
+* Improve prediction reliability and scalability
+
+---
+
+## ⚙️ 2. Smart Operational Ecosystem
+
+* **Automated Spare-Parts Marketplace**
+
+  * Trigger part ordering when RUL falls below threshold
+* **Mobile Application**
+
+  * Real-time alerts and on-the-go approvals
+* **Multi-Language Support**
+
+  * Bahasa Melayu, Thai, Vietnamese
+  * Improve accessibility for regional SMEs
+
+---
+
+## 📈 3. Scalable Product Expansion
+
+* Expand deployment across SMEs in Southeast Asia
+* Integrate with existing factory systems (ERP / IoT platforms)
+* Enable cross-factory benchmarking and insights
+
+---
+
+## 🌏 Vision
+
+To become the **default “factory intelligence” layer** for SMEs across Southeast Asia — transforming factories from reactive operations into **predictive, data-driven ecosystems.**
+
+---
 
 ## Contributors 👩🏼‍💻
 - Team **TBC**
@@ -147,4 +261,6 @@ vhack2026-surpRice/
       🙆🏻‍♀️Loh Su Ting
       🧏🏻‍♀️Wong Jia Hui
       💁🏻‍♀️Wong Zi Qi
+
+
 
