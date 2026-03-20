@@ -11,13 +11,12 @@
 - [Installation](#installation-)
 - [Project Structure](#project-structure-)
 - [System Architecture](#system-architecture-)
-- [Documentation](#documentation-)
 - [Contributors](#contributors-)
 
 ---
 
-## Track & Problem Statement :mag_right:
-**Track:** Varsity Hackathon 2026 — Case Study 1: Predictive Maintenance for SME Resilience (SDG 9)
+## Case Study & Problem Statement :mag_right:
+**Case Study:** Varsity Hackathon 2026 — Case Study 1: Predictive Maintenance for SME Resilience (SDG 9)
 
 **Problem Statement:**
 ASEAN SMEs, the backbone of the economy, operate with aging machinery and thin profit margins. Reactive maintenance (fixing after failure) and inefficient preventative maintenance (replacing parts too early) lead to costly downtime. There is an urgent need for an AI-driven system that can predict machine health, visualize issues spatially, and help managers make data‑driven operational decisions—without requiring a “smart factory” overhaul.
@@ -101,10 +100,13 @@ git clone https://github.com/WONGZIQI0212/vhack2026-surpRice.git
 cd vhack2026-surpRice
 npm install
 npm run dev
-
-Project Structure ⛓
+```
+---
+## Project Structure
+```bash
 vhack2026-surpRice/
 ├── public/
+│   ├── vite.svg
 ├── src/
 │   ├── assets/               # Logo, images
 │   ├── components/           # Reusable UI
@@ -117,79 +119,24 @@ vhack2026-surpRice/
 │   ├── hooks/                # useAnomalyMode, etc.
 │   ├── pages/                # Dashboard, AIAdvisor, Maintenance, ...
 │   ├── styles/               # Global styles, theme
+│   ├── App.css
 │   ├── App.jsx
-│   ├── main.jsx
-│   └── index.css
+│   ├── LoginPage.jsx
+│   ├── WelcomePage.jsx
+│   ├── index.css
+│   └── main.jsx
 ├── .gitignore
+├── README.md
+├── eslint.config.js
 ├── index.html
+├── package-lock.json
 ├── package.json
-└── README.md
+└── vite.config.js
 ```
 ---
 ## System Architecture 🪜
-flowchart LR
-    %% USER
-    User([👤 User]) -->|Commands & Requests| FrontendApp["Frontend (React App)"]
 
-    %% FRONTEND GROUP
-    subgraph F[Frontend Layer 🎛️]
-      FrontendApp -->|User Interaction| UI["UI Modules<br/>(3D View • Dashboard • AI Chat • Maintenance)"]
-      FrontendApp -->|Telemetry Stream| WebSocket[WebSocket Client]
-      FrontendApp -->|Local Processing| LocalCalc[Local KPI Engine]
-      FrontendApp -->|UI Updates & Feedback| ChartsComp[Charts / Visualization]
-    end
-
-    %% BACKEND GROUP
-    subgraph B[Backend Layer ⚙️]
-      API[REST API / WebSocket Gateway]
-      DB[(PostgreSQL / Redis / InfluxDB)]
-      AIService[AI Adapter / Model Interface]
-      MQTTBroker[(MQTT Broker)]
-    end
-
-    %% MACHINES GROUP
-    subgraph M[Machines Layer 🏭]
-      Machine1[IoT Machine A]
-      Machine2[IoT Machine B]
-    end
-
-    %% EXTERNAL SERVICES
-    subgraph X[External Services 🌐]
-      CloudAI[Cloud AI API]
-      Analytics[Logging / Monitoring Service]
-    end
-
-    %% CONNECTIONS BETWEEN LAYERS
-    
-    UI -->|API Calls / Requests| API
-    WebSocket -->|Telemetry Updates| API
-    LocalCalc -->|Compute KPIs| ChartsComp
-    ChartsComp -->|Graphs / Metrics| FrontendApp
-
-    API -->|Read/Write Data| DB
-    API -->|Forward AI Query| AIService
-    API -->|Publish / Subscribe| MQTTBroker
-    API -->|Log Events| Analytics
-
-    AIService -->|Prompt → Response| CloudAI
-
-    MQTTBroker -->|Send Commands| Machine1
-    MQTTBroker -->|Send Commands| Machine2
-    Machine1 -->|Telemetry Data| MQTTBroker
-    Machine2 -->|Telemetry Data| MQTTBroker
-
-    MQTTBroker -->|Processed Data| API
-    DB -->|Telemetry Storage| API
-    API -->|WebSocket Stream| WebSocket
-    API -->|Responses & Data| FrontendApp
-    AIService -->|AI Recommendations| API
----
-
-## Documentation 📃
-- **User Guide:** https://github.com/jiahui-1101/CodeNection/blob/main/User%20Manual%20UTM%20Bright%20(1).pdf
-- **User Feedback:** https://forms.gle/ZK2iXbxEqRqoE2iJ6
-- **Demo / Walkthrough:** https://youtu.be/3rg5cUewwSQ
-- **Tech Stack:** Flutter :heavy_plus_sign: Firebase
+![SurpRice System Architecture](https://github.com/WONGZIQI0212/vhack2026-surpRice/raw/main/src/assets/SystemArchitecture.png)
 
 ---
 
