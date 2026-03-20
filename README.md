@@ -65,7 +65,7 @@ Each scenario updates the 3D twin and KPIs in real time, letting managers explor
 - **Instant Feedback Sliders** – Adjust parameters and watch cost, capacity, and risk change in real time.  
 - *“Every decision is tested before it becomes a risk.”*
 
-- ### 5. Anomaly Diagnostics Engine 🚨🔍
+### 5. Anomaly Diagnostics Engine 🚨🔍
 - **Real‑Time Detection** – Continuously monitors sensor streams to spot deviations as they happen.
 - **Full Breakdown** – For every anomaly, the system tells you:
   - **When & Where** it started
