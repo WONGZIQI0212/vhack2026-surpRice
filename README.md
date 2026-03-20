@@ -202,14 +202,14 @@ vhack2026-surpRice/
 Watch the video here:
 
 🔗 **YouTube Link**
-[(Link)]([https://youtu.be/](https://youtu.be/YDNeKUU__J0))
+[(Link)](https://youtu.be/YDNeKUU__J0)
 
 ---
 
 # Documentation 📄
 
 📊 **Presentation Slides**
-[(Slide Link)]([https://www.canva.com/](https://www.canva.com/design/DAHEWY3j95c/reX1Q1pJJnlxOXl0sT6FdA/edit?utm_content=DAHEWY3j95c&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton))
+[(Slide Link)](https://www.canva.com/design/DAHEWY3j95c/reX1Q1pJJnlxOXl0sT6FdA/edit?utm_content=DAHEWY3j95c&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
 
 ---
 # 🚀 Future Improvements & Expansion
