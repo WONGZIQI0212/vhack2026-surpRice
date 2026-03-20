@@ -197,19 +197,19 @@ vhack2026-surpRice/
 ![SurpRice System Architecture](https://github.com/WONGZIQI0212/vhack2026-surpRice/raw/main/src/assets/SystemArchitecture.png)
 
 ---
-# Demo Video 🎥
+# Video Presentation 🎥
 
-Watch the demo here:
+Watch the video here:
 
-🔗 **YouTube Demo**
-[(Link)](https://youtu.be/)
+🔗 **YouTube Link**
+[(Link)]([https://youtu.be/](https://youtu.be/YDNeKUU__J0))
 
 ---
 
 # Documentation 📄
 
 📊 **Presentation Slides**
-[(Slide Link)](https://www.canva.com/)
+[(Slide Link)]([https://www.canva.com/](https://www.canva.com/design/DAHEWY3j95c/reX1Q1pJJnlxOXl0sT6FdA/edit?utm_content=DAHEWY3j95c&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton))
 
 ---
 # 🚀 Future Improvements & Expansion
@@ -261,6 +261,4 @@ To become the **default “factory intelligence” layer** for SMEs across South
       🙆🏻‍♀️Loh Su Ting
       🧏🏻‍♀️Wong Jia Hui
       💁🏻‍♀️Wong Zi Qi
-
-
 
